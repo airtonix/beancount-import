@@ -268,5 +268,4 @@ class ExtractorCsvBase(ExtractorBase):
         reader = csv.DictReader(self.input_file, fieldnames=self.fields)
 
         for lineno, line in enumerate(reader, start=start_row):
-            print(lineno, line)
             yield self.process_line(lineno, line)
