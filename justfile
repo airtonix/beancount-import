@@ -17,7 +17,7 @@ setup:
 lint:
     echo "Linting files..."
 
-    ruff check
+    pdm run ruff check
 
     @echo ""
     @echo "👍 Done"
@@ -26,7 +26,7 @@ lint:
 test:
     echo "Linting files..."
 
-    pytest
+    pdm run pytest --verbosity=0
 
     @echo ""
     @echo "👍 Done"
@@ -35,7 +35,7 @@ test:
 unittest:
     echo "Running unit tests..."
 
-    pytest
+    pdm run pytest
 
     @echo ""
     @echo "👍 Done"
@@ -65,7 +65,7 @@ build:
 docs:
     echo "Generating documentation..."
 
-    mkdocs build
+    pdm run mkdocs build
 
     @echo ""
     @echo "👍 Done"
@@ -74,11 +74,12 @@ docs:
 docs-serve:
     echo "Serving documentation..."
 
-    mkdocs serve
+    pdm run mkdocs serve
 
     @echo ""
     @echo "👍 Done"
     @echo ""
+
 publish TAG="next":
     echo "Publishing package..."
 

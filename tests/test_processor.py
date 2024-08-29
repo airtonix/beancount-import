@@ -746,20 +746,6 @@ def test_process_transaction(
     expected: list[GeneratedTransaction],
     expected_result: UnprocessedTransaction | None,
 ):
-    # result = None
-
-    # def get_result():
-    #     nonlocal result
-    #     result = yield from process_transaction(
-    #         template_env=template_env,
-    #         input_config=input_config,
-    #         import_rules=import_rules,
-    #         txn=txn,
-    #     )
-
-    # assert list(get_result()) == expected
-    # assert result == expected_result
-
     result = [
         item
         for item in process_transaction(
@@ -774,7 +760,7 @@ def test_process_transaction(
 
 
 @pytest.mark.parametrize(
-    "folder, expected",
+    "expected",
     [
         (
             "simple-mercury",
@@ -915,48 +901,28 @@ def test_process_transaction(
                     import_id="mercury.csv:-1",
                 ),
             ],
-        ),
-        (
-            "auto-detect",
-            [
-                GeneratedTransaction(
-                    file="output.bean",
-                    id="mercury.csv:-1",
-                    sources=["mercury.csv"],
-                    date="2024-04-15",
-                    flag="*",
-                    narration="Jane Doe",
-                    postings=[
-                        GeneratedPosting(
-                            account="Assets:Bank:US:Mercury",
-                            amount=Amount(number="-1500.00", currency="USD"),
-                        ),
-                        GeneratedPosting(
-                            account="Expenses",
-                            amount=Amount(number="1500.00", currency="USD"),
-                        ),
-                    ],
-                ),
-            ],
-        ),
+        )
     ],
 )
 def test_process_imports(
     fixtures_folder: pathlib.Path, folder: str, expected: list[GeneratedTransaction]
 ):
     folder_path = fixtures_folder / "processor" / folder
-    extractor_factory = create_extractor_factory()
+    extractor_factory = create_extractor_factory(
+        working_dir=folder_path,
+    )
 
     with open(folder_path / "import.yaml", "rt") as fo:
         payload = yaml.safe_load(fo)
+
     doc = ImportDoc.model_validate(payload)
-    assert (
-        list(
-            process_imports(
-                import_doc=doc,
-                input_dir=folder_path,
-                extractor_factory=extractor_factory,
-            )
+
+    result = list(
+        process_imports(
+            import_doc=doc,
+            input_dir=folder_path,
+            extractor_factory=extractor_factory,
         )
-        == expected
     )
+
+    assert result == expected

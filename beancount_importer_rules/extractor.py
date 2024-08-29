@@ -169,7 +169,13 @@ class ExtractorCsvBase(ExtractorBase):
         """
         Parse a date string using the self.date_format
         """
-        return datetime.datetime.strptime(date_str, self.date_format).date()
+        return self.parse_time(date_str).date()
+
+    def parse_time(self, date_str: str) -> datetime.datetime:
+        """
+        Parse a date string using the self.date_format
+        """
+        return datetime.datetime.strptime(date_str, self.date_format)
 
     def fingerprint(self) -> Fingerprint | None:
         """
@@ -185,8 +191,10 @@ class ExtractorCsvBase(ExtractorBase):
         row = None
         for row in reader:
             pass
+
         if row is None:
             return
+
         hash = hashlib.sha256()
         for field in reader.fieldnames:
             hash.update(row[field].encode("utf8"))
@@ -221,12 +229,42 @@ class ExtractorCsvBase(ExtractorBase):
         except Exception:
             return False
 
+    def detect_has_header(self) -> bool:
+        """
+        Check if the supplied csv file has a header row.
+
+        It will if the fieldnames attribute is not None and they match the
+        values of the first row of the file.
+        """
+        if not hasattr(self.input_file, "name"):
+            return False
+
+        if self.fields is None:
+            raise ExtractorClassIncorrectlyCraftedError(
+                module=self.__module__,
+                klass_name=self.__class__.__name__,
+            )
+
+        if self.input_file is None:
+            raise ExtractorClassInvalidInputFileError(
+                module=self.__module__, klass_name=self.__class__.__name__
+            )
+
+        reader = csv.DictReader(self.input_file)
+        try:
+            return reader.fieldnames == self.fields
+        except Exception:
+            return False
+
     def process_line(self, lineno: int, line: dict) -> Transaction:
         raise NotImplementedError()
 
     def process(self) -> typing.Generator[Transaction, None, None]:
         self.input_file.seek(os.SEEK_SET, 0)
-        reader = csv.DictReader(self.input_file, fieldnames=self.fields)
+        if self.detect_has_header():
+            reader = csv.DictReader(self.input_file)
+        else:
+            reader = csv.DictReader(self.input_file, fieldnames=self.fields)
 
         for lineno, line in enumerate(reader):
             yield self.process_line(lineno, line)
