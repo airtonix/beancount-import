@@ -24,9 +24,22 @@ lint:
     @echo ""
 
 test:
-    echo "Linting files..."
+    echo "Testing files..."
 
     pdm run pytest --verbosity=0
+
+    @echo ""
+    @echo "👍 Done"
+    @echo ""
+
+citest REPORT_OUTPUT="/dev/tty":
+    echo "Running tests..."
+
+    pdm run pytest -v \
+        --md-report \
+        --md-report-flavor gfm \
+        --md-report-exclude-outcomes passed skipped xpassed \
+        --md-report-output "{{REPORT_OUTPUT}}"
 
     @echo ""
     @echo "👍 Done"

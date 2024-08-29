@@ -33,6 +33,7 @@ dev = [
     "beancount==2.3.6",
     "pylance>=0.16.1",
     "ruff>=0.6.2",
+    "pytest-md-report>=0.6.2",
 ]
 
 [tool.pdm.build]
