@@ -21,7 +21,7 @@ imports:
   - match:
       desc: "Subscription fee"
     actions:
-      - file: "output.bean"
+      - file: "simple.bean"
         txn:
           postings:
             - account: "Assets:Bank"
@@ -33,7 +33,7 @@ imports:
   - match:
       desc: ".*"
     actions:
-      - file: "output.bean"
+      - file: "simple.bean"
         txn:
           postings:
             - account: "Assets:Bank"
