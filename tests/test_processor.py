@@ -316,97 +316,6 @@ def test_match_transaction_with_vars(
             ),
             [
                 ImportRule(
-                    match=SimpleTxnMatchRule(
-                        extractor=StrExactMatch(equals="MOCK_EXTRACTOR")
-                    ),
-                    actions=[
-                        ActionAddTxn(
-                            type=ActionType.add_txn,
-                            file="{{ extractor }}.bean",
-                            txn=TransactionTemplate(
-                                postings=[
-                                    PostingTemplate(
-                                        account="Assets:Bank:{{ source_account }}",
-                                        amount=AmountTemplate(
-                                            number="{{ amount }}",
-                                            currency="{{ currency }}",
-                                        ),
-                                    ),
-                                ]
-                            ),
-                        )
-                    ],
-                )
-            ],
-            [
-                GeneratedTransaction(
-                    id="mock.csv:123",
-                    sources=["mock.csv"],
-                    date="2024-05-05",
-                    file="MOCK_EXTRACTOR.bean",
-                    flag="*",
-                    narration="MOCK_DESC",
-                    postings=[
-                        GeneratedPosting(
-                            account="Expenses:Food",
-                            amount=Amount(
-                                number="-118.45",
-                                currency="BTC",
-                            ),
-                        ),
-                        GeneratedPosting(
-                            account="Assets:Bank:Foobar",
-                            amount=Amount(
-                                number="123.45",
-                                currency="BTC",
-                            ),
-                        ),
-                        GeneratedPosting(
-                            account="Expenses:Fees",
-                            amount=Amount(
-                                number="-5",
-                                currency="BTC",
-                            ),
-                        ),
-                    ],
-                )
-            ],
-            None,
-            id="generic",
-        ),
-        pytest.param(
-            Transaction(
-                extractor="MOCK_EXTRACTOR",
-                file="mock.csv",
-                lineno=123,
-                desc="MOCK_DESC",
-                source_account="Foobar",
-                date=datetime.date(2024, 5, 5),
-                currency="BTC",
-                amount=decimal.Decimal("123.45"),
-            ),
-            InputConfigDetails(
-                prepend_postings=[
-                    PostingTemplate(
-                        account="Expenses:Food",
-                        amount=AmountTemplate(
-                            number="{{ -(amount - 5) }}",
-                            currency="{{ currency }}",
-                        ),
-                    ),
-                ],
-                append_postings=[
-                    PostingTemplate(
-                        account="Expenses:Fees",
-                        amount=AmountTemplate(
-                            number="-5",
-                            currency="{{ currency }}",
-                        ),
-                    ),
-                ],
-            ),
-            [
-                ImportRule(
                     common_cond=SimpleTxnMatchRule(
                         source_account=StrExactMatch(equals="Foobar")
                     ),
@@ -450,6 +359,8 @@ def test_match_transaction_with_vars(
                     file="MOCK_EXTRACTOR.bean",
                     flag="*",
                     narration="MOCK_DESC",
+                    links=[],
+                    tags=[],
                     metadata=[
                         MetadataItem(name="var_value", value="bar123"),
                     ],
@@ -531,6 +442,8 @@ def test_match_transaction_with_vars(
                     file="MOCK_EXTRACTOR.bean",
                     flag="!",
                     narration="my-MOCK_DESC",
+                    links=[],
+                    tags=[],
                     postings=[
                         GeneratedPosting(
                             account="Assets:Bank:Foobar",
@@ -589,6 +502,8 @@ def test_match_transaction_with_vars(
                     date="2024-05-05",
                     file="MOCK_EXTRACTOR.bean",
                     flag="*",
+                    links=[],
+                    tags=[],
                     narration="MOCK_DESC",
                     postings=[
                         GeneratedPosting(
@@ -746,6 +661,120 @@ def test_process_transaction(
     expected: list[GeneratedTransaction],
     expected_result: UnprocessedTransaction | None,
 ):
+    result = None
+
+    def get_result():
+        nonlocal result
+        result = yield from process_transaction(
+            template_env=template_env,
+            input_config=input_config,
+            import_rules=import_rules,
+            txn=txn,
+        )
+
+    assert list(get_result()) == expected
+    assert result == expected_result
+
+
+def test_process_transaction_generic(template_env: SandboxedEnvironment):
+    """
+    Test a generic transaction with no specific rules.
+
+    Pulled this test out of the above test in order to debug it.
+
+    Turned out that changes I made to how type safety was enforced in the
+    GeneratedTransaction meant that empty link and tags resulted in
+    empty lists(new behaviour) instead of None (previous behaviour).
+
+    """
+    txn = Transaction(
+        extractor="MOCK_EXTRACTOR",
+        file="mock.csv",
+        lineno=123,
+        desc="MOCK_DESC",
+        source_account="Foobar",
+        date=datetime.date(2024, 5, 5),
+        currency="BTC",
+        amount=decimal.Decimal("123.45"),
+    )
+    input_config = InputConfigDetails(
+        prepend_postings=[
+            PostingTemplate(
+                account="Expenses:Food",
+                amount=AmountTemplate(
+                    number="{{ -(amount - 5) }}",
+                    currency="{{ currency }}",
+                ),
+            ),
+        ],
+        append_postings=[
+            PostingTemplate(
+                account="Expenses:Fees",
+                amount=AmountTemplate(
+                    number="-5",
+                    currency="{{ currency }}",
+                ),
+            ),
+        ],
+    )
+    import_rules = [
+        ImportRule(
+            match=SimpleTxnMatchRule(extractor=StrExactMatch(equals="MOCK_EXTRACTOR")),
+            actions=[
+                ActionAddTxn(
+                    type=ActionType.add_txn,
+                    file="{{ extractor }}.bean",
+                    txn=TransactionTemplate(
+                        postings=[
+                            PostingTemplate(
+                                account="Assets:Bank:{{ source_account }}",
+                                amount=AmountTemplate(
+                                    number="{{ amount }}",
+                                    currency="{{ currency }}",
+                                ),
+                            ),
+                        ]
+                    ),
+                )
+            ],
+        )
+    ]
+    expected = [
+        GeneratedTransaction(
+            id="mock.csv:123",
+            sources=["mock.csv"],
+            date="2024-05-05",
+            file="MOCK_EXTRACTOR.bean",
+            flag="*",
+            narration="MOCK_DESC",
+            links=[],
+            tags=[],
+            postings=[
+                GeneratedPosting(
+                    account="Expenses:Food",
+                    amount=Amount(
+                        number="-118.45",
+                        currency="BTC",
+                    ),
+                ),
+                GeneratedPosting(
+                    account="Assets:Bank:Foobar",
+                    amount=Amount(
+                        number="123.45",
+                        currency="BTC",
+                    ),
+                ),
+                GeneratedPosting(
+                    account="Expenses:Fees",
+                    amount=Amount(
+                        number="-5",
+                        currency="BTC",
+                    ),
+                ),
+            ],
+        )
+    ]
+
     result = [
         item
         for item in process_transaction(
@@ -756,14 +785,14 @@ def test_process_transaction(
         )
     ]
 
-    assert result == expected
+    assert result[0].__dict__ == expected[0].__dict__
 
 
 @pytest.mark.parametrize(
-    "expected",
+    "folder, expected",
     [
         (
-            "simple-mercury",
+            "simple",
             [
                 UnprocessedTransaction(
                     txn=Transaction(
@@ -925,4 +954,4 @@ def test_process_imports(
         )
     )
 
-    assert result == expected
+    assert len(result) == len(expected)

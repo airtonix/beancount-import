@@ -145,6 +145,9 @@ class ExtractorCsvBase(ExtractorBase):
     date_format: str = "%d/%m/%Y"
     """The date format the CSV file uses"""
 
+    datetime_format: str = "%d/%m/%Y %H:%M:%S"
+    """The datetime format the CSV file uses"""
+
     date_field: str = "Date"
     """The date field in the CSV file"""
 
@@ -169,13 +172,13 @@ class ExtractorCsvBase(ExtractorBase):
         """
         Parse a date string using the self.date_format
         """
-        return self.parse_time(date_str).date()
+        return datetime.datetime.strptime(date_str, self.date_format).date()
 
     def parse_time(self, date_str: str) -> datetime.datetime:
         """
         Parse a date string using the self.date_format
         """
-        return datetime.datetime.strptime(date_str, self.date_format)
+        return datetime.datetime.strptime(date_str, self.datetime_format)
 
     def fingerprint(self) -> Fingerprint | None:
         """
@@ -261,10 +264,9 @@ class ExtractorCsvBase(ExtractorBase):
 
     def process(self) -> typing.Generator[Transaction, None, None]:
         self.input_file.seek(os.SEEK_SET, 0)
-        if self.detect_has_header():
-            reader = csv.DictReader(self.input_file)
-        else:
-            reader = csv.DictReader(self.input_file, fieldnames=self.fields)
+        start_row = self.detect_has_header() and 1 or 0
+        reader = csv.DictReader(self.input_file, fieldnames=self.fields)
 
-        for lineno, line in enumerate(reader):
+        for lineno, line in enumerate(reader, start=start_row):
+            print(lineno, line)
             yield self.process_line(lineno, line)

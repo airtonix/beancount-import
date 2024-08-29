@@ -1,14 +1,15 @@
 import decimal
 from typing import Dict, List
 
-from pytz import timezone
+import pytz
 
 from beancount_importer_rules.data_types import Transaction
 from beancount_importer_rules.extractor import ExtractorCsvBase
 
 
 class MercuryCsvExtractor(ExtractorCsvBase):
-    date_format: str = "%d/%m/%Y"
+    date_format: str = "%m-%d-%Y"  # month-day-year hour:minute:second
+    datetime_format: str = "%m-%d-%Y %H:%M:%S"  # month-day-year hour:minute:second
     date_field: str = "Date (UTC)"
     name: str = "mercury"
     fields: List[str] = [
@@ -42,7 +43,7 @@ class MercuryCsvExtractor(ExtractorCsvBase):
         name_on_card = line.pop("Name On Card")
         last_four_digits = line.pop("Last Four Digits")
         gl_code = line.pop("GL Code")
-        timestamp = timezone.localize(self.parse_time(line.pop("Timestamp")))
+        timestamp = pytz.UTC.localize(self.parse_time(line.pop("Timestamp")))
 
         return Transaction(
             extractor=self.name,
