@@ -17,7 +17,7 @@ setup:
 types:
     echo "Checking types..."
 
-    pdm run mypy ./beancount_importer_rules
+    pdm run pyright ./beancount_importer_rules
 
     @echo ""
     @echo "👍 Done"
