@@ -29,6 +29,9 @@ jobs:
       - name: Install Python Packages
         uses: ./.github/actions/setup-dependencies
 
+      - name: Detect Secrets
+        uses: ./.github/actions/detect-secrets
+
       - name: lint
         run: just lint
 
