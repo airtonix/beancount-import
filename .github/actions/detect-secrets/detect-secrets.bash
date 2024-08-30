@@ -96,7 +96,7 @@ For the secrets you have just compromised (it is NOT sufficient to rebase to rem
 EOF
 }
 
-echo "::add-matcher::$GITHUB_ACTION_PATH/secret-problem-matcher.json"
+echo "::add-matcher::$GITHUB_ACTION_PATH/problem-matcher.json"
 if [ -z "$BASELINE_FILE" ]; then
     BASELINE_FILE=$(mktemp)
     export BASELINE_FILE
