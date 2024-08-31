@@ -68,8 +68,8 @@ integrationtest:
     echo "Running integration tests..."
 
     pdm run beancount-import import \
-        -w tests/fixtures/integration \
-        -b simple.bean \
+        -w tests/fixtures/engine \
+        -b main.bean \
         -c import.yaml
 
     @echo ""
@@ -105,6 +105,16 @@ publish ENV="pypi":
 
     gopass env websites/{{ENV}}/pdm \
         pdm publish --repository {{ENV}}
+
+    @echo ""
+    @echo "👍 Done"
+    @echo ""
+
+
+schema:
+    echo "Generating schema..."
+
+    pdm run beancount-import schema > schema.json
 
     @echo ""
     @echo "👍 Done"

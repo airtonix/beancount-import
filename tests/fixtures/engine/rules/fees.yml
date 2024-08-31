@@ -1,0 +1,10 @@
+- match:
+    desc: "Subscription fee"
+  actions:
+    - txn:
+        postings:
+          - account: "Assets:Bank"
+          - account: "Expenses:Subscription"
+            amount:
+              number: "{{ -amount }}"
+              currency: "{{ currency | default('AUD', true) }}"

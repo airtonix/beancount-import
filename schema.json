@@ -181,6 +181,29 @@
       "title": "ImportRule",
       "type": "object"
     },
+    "IncludeRule": {
+      "properties": {
+        "include": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          ],
+          "title": "Include"
+        }
+      },
+      "required": [
+        "include"
+      ],
+      "title": "IncludeRule",
+      "type": "object"
+    },
     "InputConfig": {
       "properties": {
         "match": {
@@ -1227,7 +1250,14 @@
     },
     "imports": {
       "items": {
-        "$ref": "#/$defs/ImportRule"
+        "anyOf": [
+          {
+            "$ref": "#/$defs/ImportRule"
+          },
+          {
+            "$ref": "#/$defs/IncludeRule"
+          }
+        ]
       },
       "title": "Imports",
       "type": "array"

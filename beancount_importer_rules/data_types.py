@@ -273,10 +273,14 @@ class ImportRule(ImportBaseModel):
     actions: list[Action]
 
 
+class IncludeRule(ImportBaseModel):
+    include: str | list[str]
+
+
 class ImportDoc(ImportBaseModel):
     context: dict | None = None
     inputs: list[InputConfig]
-    imports: list[ImportRule]
+    imports: list[ImportRule | IncludeRule]
     outputs: list[OutputConfig] | None = None
 
 

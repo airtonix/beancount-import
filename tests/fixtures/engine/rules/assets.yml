@@ -1,0 +1,9 @@
+- match:
+    desc: ".*"
+  actions:
+    - txn:
+        postings:
+          - account: "Assets:Bank"
+            amount:
+              number: "{{ -amount }}"
+              currency: "{{ currency | default('AUD', true) }}"
