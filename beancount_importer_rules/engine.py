@@ -141,7 +141,7 @@ class ImportRuleEngine:
 
     def process_transaction(self):
         output = IProcessedTransactionsMap()
-        imports = self.resolve_includes(self.config.imports)
+        imports = self.resolve_includes(self.config.imports.root)
 
         transactions = process_imports(
             inputs=self.config.inputs,

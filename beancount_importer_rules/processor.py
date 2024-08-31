@@ -198,8 +198,10 @@ def process_transaction(
             matched = match_transaction_with_vars(
                 txn, import_rule.match, common_condition=import_rule.common_cond
             )
+
             if matched is None:
                 continue
+
             matched_vars = {
                 key: template_env.from_string(value).render(**txn_ctx)
                 if isinstance(value, str)
@@ -245,16 +247,20 @@ def process_transaction(
             posting_templates: list[PostingTemplate] = []
             if input_config.prepend_postings is not None:
                 posting_templates.extend(input_config.prepend_postings)
+
             if action.txn.postings is not None:
                 posting_templates.extend(action.txn.postings)
+
             elif default_txn is not None and default_txn.postings is not None:
                 posting_templates.extend(default_txn.postings)
+
             if input_config.appending_postings is not None:
                 warnings.warn(
                     'The "appending_postings" field is deprecated, please use "append_postings" instead',
                     DeprecationWarning,
                 )
                 posting_templates.extend(input_config.appending_postings)
+
             elif input_config.append_postings is not None:
                 posting_templates.extend(input_config.append_postings)
 
@@ -269,6 +275,7 @@ def process_transaction(
                     if not name or not value:
                         continue
                     generated_metadata.append(MetadataItem(name=name, value=value))
+
             if not generated_metadata:
                 generated_metadata = None
 
@@ -293,6 +300,7 @@ def process_transaction(
                 rest[key] = value
 
             sources = []
+
             if txn.file is not None:
                 sources.append(txn.file)
 
@@ -308,6 +316,7 @@ def process_transaction(
                 postings=generated_postings,
                 **rest,
             )
+
             # TODO: make it possible to generate multiple transaction by changing rule config if there's
             #       a valid use case
         break

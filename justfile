@@ -69,7 +69,7 @@ integrationtest:
 
     pdm run beancount-import import \
         -w tests/fixtures/engine \
-        -b main.bean \
+        -b books/main.bean \
         -c import.yaml
 
     @echo ""
@@ -114,7 +114,7 @@ publish ENV="pypi":
 schema:
     echo "Generating schema..."
 
-    pdm run beancount-import schema > schema.json
+    pdm run beancount-import schema
 
     @echo ""
     @echo "👍 Done"

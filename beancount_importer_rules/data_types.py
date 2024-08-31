@@ -6,7 +6,7 @@ import pathlib
 import typing
 
 import pydantic
-from pydantic import BaseModel
+from pydantic import BaseModel, RootModel
 
 
 @dataclasses.dataclass(frozen=True)
@@ -277,10 +277,14 @@ class IncludeRule(ImportBaseModel):
     include: str | list[str]
 
 
+class ImportList(RootModel[typing.List[ImportRule | IncludeRule]]):
+    pass
+
+
 class ImportDoc(ImportBaseModel):
     context: dict | None = None
     inputs: list[InputConfig]
-    imports: list[ImportRule | IncludeRule]
+    imports: ImportList
     outputs: list[OutputConfig] | None = None
 
 

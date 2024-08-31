@@ -19,5 +19,5 @@ inputs:
               currency: "{{ currency | default('AUD', true) }}"
 
 imports:
-  - include: "rules/assets.yml"
   - include: "rules/fees.yml"
+  - include: "rules/uknown.yml"
