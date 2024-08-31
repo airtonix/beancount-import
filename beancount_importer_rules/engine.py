@@ -8,7 +8,6 @@ from beancount_black.formatter import Formatter
 from beancount_parser.parser import make_parser
 from jinja2.sandbox import SandboxedEnvironment
 from lark import Lark
-from pydantic import TypeAdapter
 from rich import box
 from rich.logging import RichHandler
 from rich.markup import escape
@@ -19,8 +18,6 @@ from beancount_importer_rules.data_types import (
     DeletedTransaction,
     GeneratedTransaction,
     ImportDoc,
-    ImportRule,
-    IncludeRule,
     UnprocessedTransaction,
 )
 from beancount_importer_rules.environment import (
@@ -31,6 +28,7 @@ from beancount_importer_rules.extractor import (
     ExtractorFactory,
     create_extractor_factory,
 )
+from beancount_importer_rules.includes import resolve_includes
 from beancount_importer_rules.post_processor import (
     apply_change_set,
     compute_changes,
@@ -44,8 +42,6 @@ from beancount_importer_rules.utils import strip_base_path
 IMPORT_DOC_FILE = pathlib.Path(".beanhub") / "imports.yaml"
 TABLE_HEADER_STYLE = "yellow"
 TABLE_COLUMN_STYLE = "cyan"
-
-RuleListAdapter = TypeAdapter(list[ImportRule | IncludeRule])
 
 
 class IProcessedTransactionsMap:
@@ -105,43 +101,11 @@ class ImportRuleEngine:
 
             return import_doc
 
-    def load_includes(self, include_path: pathlib.Path) -> list[ImportRule]:
-        with include_path.open("rt") as fo:
-            rules = yaml.safe_load(fo)
-
-            imported = RuleListAdapter.validate_python(rules)
-
-            self.logger.info(
-                "Included rules from [green]%s[/]",
-                include_path,
-                extra={"markup": True, "highlighter": None},
-            )
-
-            return self.resolve_includes(imported)
-
-    def resolve_includes(
-        self, rules: list[ImportRule | IncludeRule]
-    ) -> list[ImportRule]:
-        imports: list[ImportRule] = []
-
-        for rule in rules:
-            if isinstance(rule, ImportRule):
-                imports.append(rule)
-            else:
-                # convert to a list of strings
-                paths = (
-                    rule.include if isinstance(rule.include, list) else [rule.include]
-                )
-                for include_path in paths:
-                    include_path = self.workdir_path / include_path
-                    includes = self.load_includes(include_path)
-                    imports.extend(includes)
-
-        return imports
-
     def process_transaction(self):
         output = IProcessedTransactionsMap()
-        imports = self.resolve_includes(self.config.imports.root)
+        imports = resolve_includes(
+            workdir_path=self.workdir_path, rules=self.config.imports.root
+        )
 
         transactions = process_imports(
             inputs=self.config.inputs,
