@@ -1,4 +1,5 @@
 import dataclasses
+import datetime
 import logging
 import os
 import pathlib
@@ -14,6 +15,11 @@ from beancount_importer_rules import constants
 from beancount_importer_rules.data_types import (
     ActionType,
     Amount,
+    DateAfterMatch,
+    DateBeforeMatch,
+    DateSameDayMatch,
+    DateSameMonthMatch,
+    DateSameYearMatch,
     DeletedTransaction,
     GeneratedPosting,
     GeneratedTransaction,
@@ -82,6 +88,72 @@ def match_str(pattern: StrMatch | None, value: str | None) -> bool:
         return pattern.contains in value
     elif isinstance(pattern, StrOneOfMatch):
         return value in pattern.one_of
+    elif isinstance(pattern, DateAfterMatch):
+        # is the value string a date and does the date occur after the date in the pattern
+        try:
+            value_as_date = datetime.datetime.strptime(value, pattern.format).date()
+            date_after = datetime.datetime.strptime(
+                pattern.date_after, pattern.format
+            ).date()
+            return value_as_date > date_after
+        except ValueError:
+            return False
+
+    elif isinstance(pattern, DateBeforeMatch):
+        # is the value string a date and does the date occur before the date in the pattern
+        try:
+            value_as_date = datetime.datetime.strptime(value, pattern.format).date()
+            date_before = datetime.datetime.strptime(
+                pattern.date_before, pattern.format
+            ).date()
+            return value_as_date < date_before
+        except ValueError:
+            return False
+
+    elif isinstance(pattern, DateSameDayMatch):
+        try:
+            # reduce the value to the day only
+            value_as_date = datetime.datetime.strptime(value, pattern.format).date()
+            match_date = datetime.datetime.strptime(
+                pattern.date_same_day, pattern.format
+            ).date()
+            return value_as_date == match_date
+        except ValueError:
+            return False
+
+    elif isinstance(pattern, DateSameMonthMatch):
+        try:
+            # reduce the value to the month only
+            value_as_date = (
+                datetime.datetime.strptime(value, pattern.format).date().replace(day=1)
+            )
+            match_date = (
+                datetime.datetime.strptime(pattern.date_same_month, pattern.format)
+                .date()
+                .replace(day=1)
+            )
+            # set the day to 1 to compare only the month
+            return value_as_date == match_date
+        except ValueError:
+            return False
+
+    elif isinstance(pattern, DateSameYearMatch):
+        try:
+            # reduce the value to the year only
+            value_as_date = (
+                datetime.datetime.strptime(value, pattern.format)
+                .date()
+                .replace(day=1, month=1)
+            )
+            match_date = (
+                datetime.datetime.strptime(pattern.date_same_year, pattern.format)
+                .date()
+                .replace(day=1, month=1)
+            )
+            # set the day and month to 1 to compare only the year
+            return value_as_date == match_date
+        except ValueError:
+            return False
     else:
         raise ValueError(f"Unexpected str match type {type(pattern)}")
 
@@ -101,12 +173,6 @@ def match_transaction(
             return False
 
     return True
-
-    # return all(
-    #     match_str(getattr(rule, key), getattr(txn, key))
-    #     for key, pattern in rule.model_dump().items()
-    #     if pattern is not None
-    # )
 
 
 def match_transaction_with_vars(
