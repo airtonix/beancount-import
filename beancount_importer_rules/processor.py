@@ -1,5 +1,4 @@
 import dataclasses
-import datetime
 import logging
 import os
 import pathlib
@@ -8,6 +7,7 @@ import typing
 import uuid
 import warnings
 
+import arrow
 import yaml
 from jinja2.sandbox import SandboxedEnvironment
 
@@ -91,32 +91,26 @@ def match_str(pattern: StrMatch | None, value: str | None) -> bool:
     elif isinstance(pattern, DateAfterMatch):
         # is the value string a date and does the date occur after the date in the pattern
         try:
-            value_as_date = datetime.datetime.strptime(value, pattern.format).date()
-            date_after = datetime.datetime.strptime(
-                pattern.date_after, pattern.format
-            ).date()
-            return value_as_date > date_after
+            value_as_date = arrow.get(value, pattern.format)
+            match_date = arrow.get(pattern.date_after, pattern.format)
+            return match_date < value_as_date
         except ValueError:
             return False
 
     elif isinstance(pattern, DateBeforeMatch):
         # is the value string a date and does the date occur before the date in the pattern
         try:
-            value_as_date = datetime.datetime.strptime(value, pattern.format).date()
-            date_before = datetime.datetime.strptime(
-                pattern.date_before, pattern.format
-            ).date()
-            return value_as_date < date_before
+            value_as_date = arrow.get(value, pattern.format)
+            match_date = arrow.get(pattern.date_before, pattern.format)
+            return match_date > value_as_date
         except ValueError:
             return False
 
     elif isinstance(pattern, DateSameDayMatch):
         try:
             # reduce the value to the day only
-            value_as_date = datetime.datetime.strptime(value, pattern.format).date()
-            match_date = datetime.datetime.strptime(
-                pattern.date_same_day, pattern.format
-            ).date()
+            value_as_date = arrow.get(value, pattern.format).floor("day")
+            match_date = arrow.get(pattern.date_same_day, pattern.format).floor("day")
             return value_as_date == match_date
         except ValueError:
             return False
@@ -124,13 +118,9 @@ def match_str(pattern: StrMatch | None, value: str | None) -> bool:
     elif isinstance(pattern, DateSameMonthMatch):
         try:
             # reduce the value to the month only
-            value_as_date = (
-                datetime.datetime.strptime(value, pattern.format).date().replace(day=1)
-            )
-            match_date = (
-                datetime.datetime.strptime(pattern.date_same_month, pattern.format)
-                .date()
-                .replace(day=1)
+            value_as_date = arrow.get(value, pattern.format).floor("month")
+            match_date = arrow.get(pattern.date_same_month, pattern.format).floor(
+                "month"
             )
             # set the day to 1 to compare only the month
             return value_as_date == match_date
@@ -140,16 +130,8 @@ def match_str(pattern: StrMatch | None, value: str | None) -> bool:
     elif isinstance(pattern, DateSameYearMatch):
         try:
             # reduce the value to the year only
-            value_as_date = (
-                datetime.datetime.strptime(value, pattern.format)
-                .date()
-                .replace(day=1, month=1)
-            )
-            match_date = (
-                datetime.datetime.strptime(pattern.date_same_year, pattern.format)
-                .date()
-                .replace(day=1, month=1)
-            )
+            value_as_date = arrow.get(value, pattern.format).floor("year")
+            match_date = arrow.get(pattern.date_same_year, pattern.format).floor("year")
             # set the day and month to 1 to compare only the year
             return value_as_date == match_date
         except ValueError:
