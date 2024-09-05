@@ -60,10 +60,13 @@ jobs:
           just test
           just unittest
           just build
+          just docs
           just integrationtest
 
   DeployProd:
+    # if a release PR was processed and a release created
     if: ${{ needs.Process.outputs.releases_created == 'true' }}
+
     needs:
       - Process
       - QA
@@ -89,11 +92,18 @@ jobs:
         run: |
           just build
 
-      - run: |
+      - name: Publish
+        run: |
           echo 'Release PR Merged.'
-          pdm publish --repository pypi
+          just publish pypi
+          just docs-deploy \
+            {{needs.Process.outputs.release_version}} \
+            latest
 
   DeployTest:
+    # if a release pr was created or updated
+    if: ${{ needs.Process.outputs.prs_created == 'true' }}
+
     needs:
       - Process
       - QA
@@ -119,16 +129,11 @@ jobs:
         run: |
           just build
 
-      - if: ${{ needs.Process.outputs.releases_created == 'true' }}
+      - name: Publish
         run: |
           echo 'Release PR Merged.'
-          pdm publish --repository pypi
-          mike deploy {{needs.Process.outputs.release_version}} \
-            --push-branch=master \
-            --push-remote=origin \
-            --update-aliases=latest
 
-      - if: ${{ needs.Process.outputs.prs_created == 'true' }}
-        run: |
-          echo 'Release PRs created/updated.'
-          pdm publish --repository testpypi
+          just publish testpypi
+          just docs-deploy \
+            {{needs.Process.outputs.release_version}}-rc \
+            dev

@@ -115,16 +115,38 @@ docs-serve:
     @echo "👍 Done"
     @echo ""
 
-publish ENV="pypi":
-    echo "Publishing package..."
+docs-deploy VERSION="" ALIAS="latest":
+    echo "Deploying documentation..."
 
-    gopass env websites/{{ENV}}/pdm \
-        pdm publish --repository {{ENV}}
+    pdm run mike deploy \
+        {{ VERSION }} \
+        {{ ALIAS }} \
+        --update-aliases
 
     @echo ""
     @echo "👍 Done"
     @echo ""
 
+publish ENV="testpypi":
+    echo "Publishing package..."
+
+    pdm publish --repository {{ENV}}
+
+    @echo ""
+    @echo "👍 Done"
+    @echo ""
+
+local-publish ENV="testpypi" VERSION:
+    echo "Locally Publishing package..."
+
+    gopass env websites/{{ENV}}/pdm \
+        pdm publish --repository {{ENV}}
+
+    just docs-deploy VERSION={{VERSION}} ALIAS=dev
+
+    @echo ""
+    @echo "👍 Done"
+    @echo ""
 
 schema:
     echo "Generating schema..."
