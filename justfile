@@ -100,6 +100,8 @@ secrets:
 docs:
     echo "Generating documentation..."
 
+    pdm run mkdocs build
+
     @echo ""
     @echo "👍 Done"
     @echo ""
@@ -107,13 +109,35 @@ docs:
 docs-serve:
     echo "Serving documentation..."
 
+    pdm run mkdocs serve
 
     @echo ""
     @echo "👍 Done"
     @echo ""
 
-publish ENV="pypi":
+docs-deploy VERSION="" ALIAS="latest":
+    echo "Deploying documentation..."
+
+    pdm run mike deploy \
+        {{ VERSION }} \
+        {{ ALIAS }} \
+        --update-aliases
+
+    @echo ""
+    @echo "👍 Done"
+    @echo ""
+
+publish ENV="testpypi":
     echo "Publishing package..."
+
+    pdm publish --repository {{ENV}}
+
+    @echo ""
+    @echo "👍 Done"
+    @echo ""
+
+local-publish ENV="testpypi":
+    echo "Locally Publishing package..."
 
     gopass env websites/{{ENV}}/pdm \
         pdm publish --repository {{ENV}}
@@ -121,7 +145,6 @@ publish ENV="pypi":
     @echo ""
     @echo "👍 Done"
     @echo ""
-
 
 schema:
     echo "Generating schema..."

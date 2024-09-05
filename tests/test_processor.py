@@ -23,6 +23,7 @@ from beancount_importer_rules.data_types import (
     DateSameYearMatch,
     DeletedTransaction,
     DeleteTransactionTemplate,
+    ExractorInputConfig,
     GeneratedPosting,
     GeneratedTransaction,
     ImportDoc,
@@ -412,6 +413,12 @@ def test_match_transaction_with_vars(
                 amount=decimal.Decimal("123.45"),
             ),
             InputConfigDetails(
+                extractor=ExractorInputConfig(
+                    import_path="mock.extractor:SomeClassName",
+                    as_name="extractor",
+                    date_format="YYYY-MM-DD",
+                    datetime_format="YYYY-MM-DD HH:mm:ss",
+                ),
                 prepend_postings=[
                     PostingTemplate(
                         account="Expenses:Food",
@@ -521,6 +528,12 @@ def test_match_transaction_with_vars(
                 amount=decimal.Decimal("123.45"),
             ),
             InputConfigDetails(
+                extractor=ExractorInputConfig(
+                    import_path="mock.extractor:SomeClassName",
+                    as_name="extractor",
+                    date_format="YYYY-MM-DD",
+                    datetime_format="YYYY-MM-DD HH:mm:ss",
+                ),
                 default_txn=TransactionTemplate(
                     id="my-{{ file }}:{{ lineno }}",
                     date="2024-01-01",
@@ -586,7 +599,14 @@ def test_match_transaction_with_vars(
                 currency="BTC",
                 amount=decimal.Decimal("123.45"),
             ),
-            InputConfigDetails(),
+            InputConfigDetails(
+                extractor=ExractorInputConfig(
+                    import_path="mock.extractor:SomeClassName",
+                    as_name="extractor",
+                    date_format="YYYY-MM-DD",
+                    datetime_format="YYYY-MM-DD HH:mm:ss",
+                ),
+            ),
             [
                 ImportRule(
                     match=SimpleTxnMatchRule(
@@ -648,6 +668,12 @@ def test_match_transaction_with_vars(
                 amount=decimal.Decimal("123.45"),
             ),
             InputConfigDetails(
+                extractor=ExractorInputConfig(
+                    import_path="mock.extractor:SomeClassName",
+                    as_name="extractor",
+                    date_format="YYYY-MM-DD",
+                    datetime_format="YYYY-MM-DD HH:mm:ss",
+                ),
                 prepend_postings=[
                     PostingTemplate(
                         account="Expenses:Food",
@@ -718,7 +744,14 @@ def test_match_transaction_with_vars(
                 currency="BTC",
                 amount=decimal.Decimal("123.45"),
             ),
-            InputConfigDetails(),
+            InputConfigDetails(
+                extractor=ExractorInputConfig(
+                    import_path="mock.extractor:SomeClassName",
+                    as_name="extractor",
+                    date_format="YYYY-MM-DD",
+                    datetime_format="YYYY-MM-DD HH:mm:ss",
+                ),
+            ),
             [
                 ImportRule(
                     match=SimpleTxnMatchRule(
@@ -751,7 +784,14 @@ def test_match_transaction_with_vars(
                 currency="BTC",
                 amount=decimal.Decimal("123.45"),
             ),
-            InputConfigDetails(),
+            InputConfigDetails(
+                extractor=ExractorInputConfig(
+                    import_path="mock.extractor:SomeClassName",
+                    as_name="extractor",
+                    date_format="YYYY-MM-DD",
+                    datetime_format="YYYY-MM-DD HH:mm:ss",
+                ),
+            ),
             [
                 ImportRule(
                     match=SimpleTxnMatchRule(
@@ -815,6 +855,12 @@ def test_process_transaction_generic(template_env: SandboxedEnvironment):
         amount=decimal.Decimal("123.45"),
     )
     input_config = InputConfigDetails(
+        extractor=ExractorInputConfig(
+            import_path="mock.extractor:SomeClassName",
+            as_name="extractor",
+            date_format="YYYY-MM-DD",
+            datetime_format="YYYY-MM-DD HH:mm:ss",
+        ),
         prepend_postings=[
             PostingTemplate(
                 account="Expenses:Food",
