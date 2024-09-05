@@ -140,8 +140,12 @@ jobs:
         uses: ./.github/actions/setup-dependencies
 
       - name: Preflight
+        # allow this to fail, as we are not building the final release
+
         run: |
-          just build
+          commits_since_last_tag=$(git log $(git describe --tags --abbrev=0)..HEAD --oneline | wc -l)
+          pdm run version {{needs.Process.outputs.release_version}}-rc.${commits_since_last_tag}
+          just build || true
 
       - name: Publish
         run: |
