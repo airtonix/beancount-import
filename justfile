@@ -119,9 +119,10 @@ docs-deploy VERSION="" ALIAS="latest":
     echo "Deploying documentation..."
 
     pdm run mike deploy \
+        --push \
+        --update-aliases \
         {{ VERSION }} \
-        {{ ALIAS }} \
-        --update-aliases
+        {{ ALIAS }}
 
     @echo ""
     @echo "👍 Done"
