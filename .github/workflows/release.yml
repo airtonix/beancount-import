@@ -77,6 +77,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # 4.1.7
+        with:
+          fetch-depth: 0
+
+      - name: setup git author
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
 
       - uses: jdx/mise-action@d6e32c1796099e0f1f3ac741c220a8b7eae9e5dd # v2.0.6
         with:
@@ -114,6 +121,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # 4.1.7
+        with:
+          fetch-depth: 0
+
+      - name: setup git author
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
 
       - uses: jdx/mise-action@d6e32c1796099e0f1f3ac741c220a8b7eae9e5dd # v2.0.6
         with:
