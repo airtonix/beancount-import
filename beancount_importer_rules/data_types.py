@@ -952,7 +952,6 @@ class ExractorInputConfig(ImportBaseModel):
 class InputConfigDetails(ImportBaseModel):
     """
     The input configuration details for the import rule.
-
     """
 
     extractor: ExractorInputConfig

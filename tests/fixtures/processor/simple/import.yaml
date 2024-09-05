@@ -1,5 +1,5 @@
 ---
-# yaml-language-server: $schema=../../../../beancount-import.schema.json
+# yaml-language-server: $schema=../../../../schema.json
 
 context:
   myvar:
@@ -14,7 +14,8 @@ context:
 inputs:
   - match: "*.csv"
     config:
-      extractor: tests.fixtures.importer.mercury:MercuryCsvExtractor
+      extractor:
+        import_path: tests.fixtures.importer.mercury:MercuryCsvExtractor
       prepend_postings:
         - account: Assets:Bank:US:Mercury
           amount:
