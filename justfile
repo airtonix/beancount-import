@@ -136,13 +136,11 @@ publish ENV="testpypi":
     @echo "👍 Done"
     @echo ""
 
-local-publish ENV="testpypi" VERSION:
+local-publish ENV="testpypi":
     echo "Locally Publishing package..."
 
     gopass env websites/{{ENV}}/pdm \
         pdm publish --repository {{ENV}}
-
-    just docs-deploy VERSION={{VERSION}} ALIAS=dev
 
     @echo ""
     @echo "👍 Done"
