@@ -83,7 +83,7 @@ jobs:
       - name: setup git author
         uses: ./.github/actions/setup-git-author
         with:
-          user: commit
+          user: actor
 
       - uses: jdx/mise-action@d6e32c1796099e0f1f3ac741c220a8b7eae9e5dd # v2.0.6
         with:
@@ -127,7 +127,7 @@ jobs:
       - name: setup git author
         uses: ./.github/actions/setup-git-author
         with:
-          user: commit
+          user: actor
 
       - uses: jdx/mise-action@d6e32c1796099e0f1f3ac741c220a8b7eae9e5dd # v2.0.6
         with:
