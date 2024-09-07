@@ -104,7 +104,7 @@ jobs:
           echo 'Release PR Merged.'
           just publish pypi
           just docs-deploy \
-            {{needs.Process.outputs.release_version}} \
+            ${{needs.Process.outputs.release_version}} \
             latest
 
   DeployTest:
@@ -139,12 +139,17 @@ jobs:
       - name: Install Python Packages
         uses: ./.github/actions/setup-dependencies
 
+      - name: Rc Version
+        id: compute_rc_version
+        run: |
+          commits_since_last_tag=$(git log $(git describe --tags --abbrev=0)..HEAD --oneline | wc -l)
+          echo "Version=${{needs.Process.outputs.release_version}}rc$commits_since_last_tag" >> $GITHUB_OUTPUT
+
       - name: Preflight
         # allow this to fail, as we are not building the final release
 
         run: |
-          commits_since_last_tag=$(git log $(git describe --tags --abbrev=0)..HEAD --oneline | wc -l)
-          pdm version {{needs.Process.outputs.release_version}}rc${commits_since_last_tag}
+          pdm version ${{ steps.compute_rc_version.outputs.Version }}
           just build || true
 
       - name: Publish
@@ -153,5 +158,5 @@ jobs:
 
           just publish testpypi
           just docs-deploy \
-            {{needs.Process.outputs.release_version}}-rc \
+            ${{ steps.compute_rc_version.outputs.Version }} \
             dev
