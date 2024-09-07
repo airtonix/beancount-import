@@ -143,11 +143,10 @@ jobs:
         id: compute_rc_version
         run: |
           commits_since_last_tag=$(git log $(git describe --tags --abbrev=0)..HEAD --oneline | wc -l)
-          echo "Version=${{needs.Process.outputs.release_version}}rc$commits_since_last_tag" >> $GITHUB_OUTPUT
+          last_tag=$(git describe --tags --abbrev=0)
+          echo "Version=$last_tag.$commits_since_last_tag" >> $GITHUB_OUTPUT
 
       - name: Preflight
-        # allow this to fail, as we are not building the final release
-
         run: |
           pdm version ${{ steps.compute_rc_version.outputs.Version }}
           just build || true

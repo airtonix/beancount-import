@@ -151,8 +151,8 @@ publish ENV="testpypi":
 local-publish ENV="testpypi":
     echo "Locally Publishing package..."
 
-    gopass env websites/{{ENV}}/pdm \
-        pdm publish --repository {{ENV}}
+    gopass env "websites/{{ENV}}/pdm" \
+        sh -c "pdm publish --repository {{ENV}}"
 
     @echo ""
     @echo "👍 Done"

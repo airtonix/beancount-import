@@ -1,4 +1,6 @@
 site_name: Beancount Importer Rules
+repo_url: https://github.com/zenobi-us/beancount-importer-rules
+edit_uri: ""
 
 watch:
   - docs/
