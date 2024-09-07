@@ -39,7 +39,7 @@ dev = [
     "mypy>=1.11.2",
     "pyright>=1.1.378",
     "pre-commit>=3.8.0",
-    "mkdocs-material>=9.5.34",
+    "mkdocs-material[imaging]>=9.5.34",
     "mkdocs>=1.6.1",
     "mkdocstrings>=0.26.0",
     "mkdocstrings-python",
@@ -50,6 +50,8 @@ dev = [
     "markdown>=3.7",
     "pymdown-extensions>=10.9",
     "pygments>=2.18.0",
+    "pillow>=10.4.0",
+    "cairosvg>=2.7.1",
 ]
 
 [tool.pdm.build]

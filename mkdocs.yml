@@ -1,5 +1,7 @@
 site_name: Beancount Importer Rules
+site_url: https://zenobi-us.github.io/beancount-importer-rules
 repo_url: https://github.com/zenobi-us/beancount-importer-rules
+repo_name: GitHub
 edit_uri: ""
 
 watch:
@@ -55,6 +57,7 @@ markdown_extensions:
   - pymdownx.keys
 
 plugins:
+  - social
   - search
   - tags
   - autorefs
