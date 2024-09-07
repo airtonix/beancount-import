@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.4](https://github.com/zenobi-us/beancount-importer-rules/compare/v0.1.3...v0.1.4) (2024-09-07)
+
+
+### Documentation
+
+* deployment of docs annotated with git author ([#14](https://github.com/zenobi-us/beancount-importer-rules/issues/14)) ([4888a70](https://github.com/zenobi-us/beancount-importer-rules/commit/4888a7052a0f176e4604d4ad8ac994cdc7520620))
+* documentation website now available ([#12](https://github.com/zenobi-us/beancount-importer-rules/issues/12)) ([df1157a](https://github.com/zenobi-us/beancount-importer-rules/commit/df1157abe6afe0f778073f412a9bdb5b21723193))
+* just use git tags for dev versioning ([#20](https://github.com/zenobi-us/beancount-importer-rules/issues/20)) ([6625150](https://github.com/zenobi-us/beancount-importer-rules/commit/662515044b2ccebc2331c1c587f29aed36982a72))
+* publish docs with calculated rc version ([#16](https://github.com/zenobi-us/beancount-importer-rules/issues/16)) ([ac8bda8](https://github.com/zenobi-us/beancount-importer-rules/commit/ac8bda80a3619cd1131e45108a923fa64fc31743))
+* update docs ([#18](https://github.com/zenobi-us/beancount-importer-rules/issues/18)) ([e5aa488](https://github.com/zenobi-us/beancount-importer-rules/commit/e5aa488f5b57609c37362065f6ec119de1fd2658))
+* use actor when commiting docs ([#15](https://github.com/zenobi-us/beancount-importer-rules/issues/15)) ([cd94e11](https://github.com/zenobi-us/beancount-importer-rules/commit/cd94e110257f4eb3ae495784430ceb7e605b5dc6))
+* use correct syntax for version ([#19](https://github.com/zenobi-us/beancount-importer-rules/issues/19)) ([a6b6894](https://github.com/zenobi-us/beancount-importer-rules/commit/a6b68947b862ace6987a09d54546eb6854fd21a3))
+
 ## [0.1.3](https://github.com/zenobi-us/beancount-importer-rules/compare/v0.1.2...v0.1.3) (2024-09-03)
 
 
