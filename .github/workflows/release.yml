@@ -143,7 +143,7 @@ jobs:
         id: compute_rc_version
         run: |
           commits_since_last_tag=$(git log $(git describe --tags --abbrev=0)..HEAD --oneline | wc -l)
-          last_tag=$(git describe --tags --abbrev=0)
+          last_tag=$(git describe --tags --abbrev=0 | sed 's/v//')
           echo "Version=$last_tag.$commits_since_last_tag" >> $GITHUB_OUTPUT
 
       - name: Preflight
