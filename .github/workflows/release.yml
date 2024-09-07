@@ -144,7 +144,7 @@ jobs:
 
         run: |
           commits_since_last_tag=$(git log $(git describe --tags --abbrev=0)..HEAD --oneline | wc -l)
-          pdm run version {{needs.Process.outputs.release_version}}rc${commits_since_last_tag}
+          pdm version {{needs.Process.outputs.release_version}}rc${commits_since_last_tag}
           just build || true
 
       - name: Publish
