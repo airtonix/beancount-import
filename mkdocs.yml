@@ -1,4 +1,8 @@
 site_name: Beancount Importer Rules
+site_url: https://zenobi-us.github.io/beancount-importer-rules
+repo_url: https://github.com/zenobi-us/beancount-importer-rules
+repo_name: GitHub
+edit_uri: ""
 
 watch:
   - docs/
@@ -53,6 +57,7 @@ markdown_extensions:
   - pymdownx.keys
 
 plugins:
+  - social
   - search
   - tags
   - autorefs
@@ -67,7 +72,7 @@ plugins:
       alias_type: symlink
       redirect_template: null
       deploy_prefix: ""
-      canonical_version: null
+      canonical_version: "latest"
       version_selector: true
       css_dir: css
       javascript_dir: js
