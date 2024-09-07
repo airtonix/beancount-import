@@ -121,23 +121,36 @@ docs-deploy VERSION="" ALIAS="latest":
     pdm run mike deploy \
         --push \
         --update-aliases \
+         --allow-empty \
         {{ VERSION }} \
         {{ ALIAS }}
+
+    pdm run mike set-default latest
 
     @echo ""
     @echo "👍 Done"
     @echo ""
 
 docs-deploy-local ALIAS="dev":
+    #!/bin/bash
+
     echo "Deploying documentation locally..."
 
+    commits_since_last_tag=$(git log $(git describe --tags --abbrev=0)..HEAD --oneline | wc -l)
+    # strip v from tag
+    last_tag=$(git describe --tags --abbrev=0 | sed 's/v//')
+
+    version="${last_tag}.${commits_since_last_tag}"
+
+    echo "Version: ${version}"
+
     just docs-deploy \
-        $(jq -r '.["."]' < ./.release-please-manifest.json) \
+        "${version}" \
         {{ ALIAS }}
 
-    @echo ""
-    @echo "👍 Done"
-    @echo ""
+    echo ""
+    echo "👍 Done"
+    echo ""
 
 publish ENV="testpypi":
     echo "Publishing package..."
