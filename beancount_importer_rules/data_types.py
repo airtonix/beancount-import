@@ -1054,15 +1054,19 @@ class ImportDoc(ImportBaseModel):
     ```YAML
     # yaml-language-server: $schema=https://raw.githubusercontent.com/zenobi-us/beancount-importer-rules/master/schema.json
 
+    # 📚 pathname is relative to the workspace root
+    # 🐍 import path is relative to the workspace root
+
+
     inputs:
-    - match: "data/*.csv"
+    - match: "sources/*.csv" # 📚
         config:
         extractor:
-            import_path: "beancount_importer_rules.extractor:YourExtractorClass"
+            import_path: "extractors.my_extractor:YourExtractorClass" # 🐍
             name: "custom name for this extractor instance"
             date_format: "%Y-%m-%d"
             datetime_format: "%Y-%m-%d %H:%M:%S"
-        default_file: "books/{{ date.year }}.bean"
+        default_file: "books/{{ date.year }}.bean" # 📚
         prepend_postings:
             - account: "Assets:Bank"
 
@@ -1082,6 +1086,7 @@ class ImportDoc(ImportBaseModel):
                     number: "{{ amount }}"
                     currency: "USD"
     ```
+
 
     You can view the [schema](https://raw.githubusercontent.com/zenobi-us/beancount-importer-rules/master/schema.json) for more details
     or refer to the [ImportDoc][beancount_importer_rules.data_types.ImportDoc] api

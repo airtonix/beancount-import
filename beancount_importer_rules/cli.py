@@ -69,17 +69,19 @@ def import_cmd(
     ```shell
     > tree .
     workspace/
-        ├── importers/
-        │   ├── extractors/
-        │   │   ├── my_extractor.py
-        │   ╰── csv/
+        ├── extractors/
+        │   ╰── my_extractor.py
+        │
+        ├── sources/
         │       ├── 2024-01-01.csv
         │       ├── 2024-01-02.csv
-        │       ├── 2024-01-03.csv
+        │       ╰── 2024-01-03.csv
+        │
         ├── imported/
         │   ├── 2024-01-01.bean
         │   ├── 2024-01-02.bean
         │   ╰── 2024-01-03.bean
+        │
         ├── main.bean
         ├── options.bean
         ├── imported.bean
