@@ -19,11 +19,12 @@ pdm add mypackage
 
 ### 2. Create extractors
 
-::: beancount_importer_rules.extractor.ExtractorCsvBase.__getting_started__
+::: beancount_importer_rules.extractor.ExtractorCsvBase
     options:
       show_root_toc_entry: false
       show_bases: false
       show_source: false
+      members: false
 
 ### 3. Create import rules
 
@@ -32,6 +33,7 @@ pdm add mypackage
       show_root_toc_entry: false
       show_bases: false
       show_source: false
+      members: false
 
 ### 4. Run the importer
 

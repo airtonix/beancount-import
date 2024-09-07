@@ -22,12 +22,3 @@ LOG_LEVEL_MAP = {
     LogLevel.ERROR: logging.ERROR,
     LogLevel.FATAL: logging.FATAL,
 }
-
-
-# @dataclasses.dataclass
-# class Environment:
-#     log_level: LogLevel = LogLevel.INFO
-#     logger: logging.Logger = logging.getLogger("beanhub_cli")
-
-
-# pass_env = click.make_pass_decorator(Environment, ensure=True)
