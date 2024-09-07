@@ -110,17 +110,19 @@ class ExtractorBase:
 
     Examples
 
-        class MyExtractor(ExtractorBase):
-            def detect(self):
-                return True
+    ```python
+    class MyExtractor(ExtractorBase):
+        def detect(self):
+            return True
 
-            def process(self):
-                yield Transaction(
-                    date=datetime.date.today(),
-                    narration="Test transaction",
-                    amount=Decimal("10.00"),
-                    currency="USD",
-                )
+        def process(self):
+            yield Transaction(
+                date=datetime.date.today(),
+                narration="Test transaction",
+                amount=Decimal("10.00"),
+                currency="USD",
+            )
+    ```
     """
 
     input_file: typing.TextIO
@@ -162,26 +164,24 @@ class ExtractorBase:
 class ExtractorCsvBase(ExtractorBase):
     """
     Base class for CSV extractors
+
+    Create a file called `extractors/csv.py` by
+    subclassing [`ExtractorCsvBase`][beancount_importer_rules.extractor.ExtractorCsvBase]:
+
+    ```python
+    class MyCsvExtractor(ExtractorCsvBase):
+
+        fields = ["Date", "Description", "Amount", "Currency"]
+
+        def process_line(self, lineno, line):
+            return Transaction(
+                date=self.parse_date(line["Date"]),
+                narration=line["Description"],
+                amount=Decimal(line["Amount"]),
+                currency=line["Currency"],
+            )
+    ```
     """
-
-    def __getting_started__(self):
-        """
-        Create a file called `extractors/csv.py` by
-        subclassing [`ExtractorCsvBase`][beancount_importer_rules.extractor.ExtractorCsvBase]:
-
-
-            class MyCsvExtractor(ExtractorCsvBase):
-
-                fields = ["Date", "Description", "Amount", "Currency"]
-
-                def process_line(self, lineno, line):
-                    return Transaction(
-                        date=self.parse_date(line["Date"]),
-                        narration=line["Description"],
-                        amount=Decimal(line["Amount"]),
-                        currency=line["Currency"],
-                    )
-        """
 
     date_format: str = "%d/%m/%Y"
     """The date format the CSV file uses"""
@@ -279,6 +279,11 @@ class ExtractorCsvBase(ExtractorBase):
 
         It will if the fieldnames attribute is not None and they match the
         values of the first row of the file.
+
+        We do this to detect if we need to skip the first row; it seems that
+        the DictReader class does not automatically detect if the file has a
+        header row or not and will return the first row as data if the
+        fieldnames attribute is not set.
         """
         if not hasattr(self.input_file, "name"):
             return False
@@ -301,9 +306,21 @@ class ExtractorCsvBase(ExtractorBase):
             return False
 
     def process_line(self, lineno: int, line: dict) -> Transaction:
+        """
+        Process a line in the CSV file and return a transaction.
+
+        This method should be implemented by subclasses to return a [`Transaction`][beancount_importer_rules.data_types.Transaction].
+        """
         raise NotImplementedError()
 
     def process(self) -> typing.Generator[Transaction, None, None]:
+        """
+        Process the CSV file and yield transactions.
+
+        Loops over the rows in the CSV file and yields a transaction for each row by calling
+        [`process_line`](beancount_importer_rules.extractor.ExtractorCsvBase.process_line).
+        """
+
         self.input_file.seek(os.SEEK_SET, 0)
         start_row = self.detect_has_header() and 1 or 0
         reader = csv.DictReader(self.input_file, fieldnames=self.fields)

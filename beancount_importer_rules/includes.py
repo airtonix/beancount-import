@@ -1,3 +1,8 @@
+"""
+Temporary until I implement a better
+way to handle includes in the rules.
+"""
+
 import pathlib
 
 import yaml

@@ -38,6 +38,20 @@ theme:
         icon: material/lightbulb
         name: Switch to light mode
 
+markdown_extensions:
+  - pymdownx.highlight
+  - pymdownx.tilde
+  - pymdownx.emoji
+  - pymdownx.tasklist
+  - pymdownx.superfences
+  - pymdownx.magiclink
+  - pymdownx.smartsymbols
+  - pymdownx.caret
+  - pymdownx.tabbed:
+      alternate_style: true
+      combine_header_slug: true
+  - pymdownx.keys
+
 plugins:
   - search
   - tags

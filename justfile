@@ -128,6 +128,16 @@ docs-deploy VERSION="" ALIAS="latest":
     @echo "👍 Done"
     @echo ""
 
+docs-deploy-local:
+    echo "Deploying documentation locally..."
+
+    just docs-deploy \
+        $(jq -r '.["."]' < ./.release-please-manifest.json)
+
+    @echo ""
+    @echo "👍 Done"
+    @echo ""
+
 publish ENV="testpypi":
     echo "Publishing package..."
 

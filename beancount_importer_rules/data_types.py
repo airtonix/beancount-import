@@ -11,6 +11,10 @@ from pydantic import BaseModel, RootModel
 
 @dataclasses.dataclass(frozen=True)
 class Transaction:
+    """
+    A transaction object.
+    """
+
     extractor: str
     # the filename of import source
     file: str | None = None
@@ -702,7 +706,7 @@ class TransactionTemplate(ImportBaseModel):
 
     results in the following beancount transaction:
 
-    ```beancount
+    ```ledger
     2021-01-01 * "Simple Transaction"
         icon: 🍔
         Expenses:Simple                            100 USD
@@ -900,7 +904,7 @@ class ActionIgnore(ImportBaseModel):
             - Mercury Checking xx1234
       actions:
         - type: ignore
-
+    ```
     """
 
     type: typing.Literal[ActionType.ignore] = pydantic.Field(ActionType.ignore)
@@ -1047,37 +1051,41 @@ class ImportDoc(ImportBaseModel):
 
     Examples
 
-            # yaml-language-server: $schema=https://raw.githubusercontent.com/zenobi-us/beancount-importer-rules/master/schema.json
+    ```YAML
+    # yaml-language-server: $schema=https://raw.githubusercontent.com/zenobi-us/beancount-importer-rules/master/schema.json
 
-            inputs:
-            - match: "data/*.csv"
-                config:
-                extractor:
-                    import_path: "beancount_importer_rules.extractor:YourExtractorClass"
-                    name: "custom name for this extractor instance"
-                    date_format: "%Y-%m-%d"
-                    datetime_format: "%Y-%m-%d %H:%M:%S"
-                default_file: "books/{{ date.year }}.bean"
-                prepend_postings:
-                    - account: "Assets:Bank"
+    inputs:
+    - match: "data/*.csv"
+        config:
+        extractor:
+            import_path: "beancount_importer_rules.extractor:YourExtractorClass"
+            name: "custom name for this extractor instance"
+            date_format: "%Y-%m-%d"
+            datetime_format: "%Y-%m-%d %H:%M:%S"
+        default_file: "books/{{ date.year }}.bean"
+        prepend_postings:
+            - account: "Assets:Bank"
 
-            imports:
-            - name: "simple"
-                match:
-                desc: "Simple Transaction"
-                actions:
-                - type: "add_txn"
-                    txn:
-                    date: "2021-01-01"
-                    flag: "*"
-                    narration: "Simple Transaction"
-                    postings:
-                        - account: "Expenses:Simple"
-                        amount:
-                            number: "{{ amount }}"
-                            currency: "USD"
+    imports:
+    - name: "simple"
+        match:
+        desc: "Simple Transaction"
+        actions:
+        - type: "add_txn"
+            txn:
+            date: "2021-01-01"
+            flag: "*"
+            narration: "Simple Transaction"
+            postings:
+                - account: "Expenses:Simple"
+                amount:
+                    number: "{{ amount }}"
+                    currency: "USD"
+    ```
 
-        You can view the [schema](https://raw.githubusercontent.com/zenobi-us/beancount-importer-rules/master/schema.json) for more details
+    You can view the [schema](https://raw.githubusercontent.com/zenobi-us/beancount-importer-rules/master/schema.json) for more details
+    or refer to the [ImportDoc][beancount_importer_rules.data_types.ImportDoc] api
+
     """
 
     context: dict | None = None
@@ -1088,33 +1096,33 @@ class ImportDoc(ImportBaseModel):
 
     ```YAML
     context:
-    routine_expenses:
+      routine_expenses:
         "Amazon Web Services":
-        account: Expenses:Engineering:Servers:AWS
+          account: Expenses:Engineering:Servers:AWS
         Netlify:
-        account: Expenses:Engineering:ServiceSubscription
+          account: Expenses:Engineering:ServiceSubscription
         Mailchimp:
-        account: Expenses:Marketing:ServiceSubscription
+          account: Expenses:Marketing:ServiceSubscription
         Circleci:
-        account: Expenses:Engineering:ServiceSubscription
+          account: Expenses:Engineering:ServiceSubscription
         Adobe:
-        account: Expenses:Design:ServiceSubscription
-        Digital Ocean:
-        account: Expenses:Engineering:ServiceSubscription
+          account: Expenses:Design:ServiceSubscription
+        "Digital Ocean":
+          account: Expenses:Engineering:ServiceSubscription
         Microsoft:
-        account: Expenses:Office:Supplies:SoftwareAsService
-        narration: "Microsoft 365 Apps for Business Subscription"
-        Mercury IO Cashback:
-        account: Expenses:CreditCardCashback
-        narration: "Mercury IO Cashback"
+          account: Expenses:Office:Supplies:SoftwareAsService
+          narration: "Microsoft 365 Apps for Business Subscription"
+        "Mercury IO Cashback":
+          account: Expenses:CreditCardCashback
+          narration: "Mercury IO Cashback"
         WeWork:
-        account: Expenses:Office
-        narration: "Virtual mailing address service fee from WeWork"
+          account: Expenses:Office
+          narration: "Virtual mailing address service fee from WeWork"
     ```
 
     Then, in the transaction template, we look up the dictionary to find out what narration value to use:
 
-    ```
+    ```jinja
     "{{ routine_expenses[desc].narration | default(desc, true) | default(bank_desc, true) }}"
     ```
 
