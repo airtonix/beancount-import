@@ -9,7 +9,7 @@ inputs:
       extractor:
         import_path: tests.fixtures.importer.agrimaster:AgrimasterCsvExtractor
 
-      default_file: "books/imported.{{ date.year }}.bean"
+      default_file: "books/imported/{{ date.year }}.bean"
       default_txn:
         date: "{{ date }}"
         narration: "{{ desc }}"

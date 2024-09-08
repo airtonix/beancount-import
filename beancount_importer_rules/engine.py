@@ -161,9 +161,10 @@ class ImportRuleEngine:
         parser = make_parser()
 
         for target_file, change_set in change_sets.items():
+            if change_set.remove or change_set.update and not target_file.exists():
+                raise ValueError("Expect new transactions to add only")
+
             if not target_file.exists():
-                if change_set.remove or change_set.update:
-                    raise ValueError("Expect new transactions to add only")
                 self.logger.info(
                     "Create new bean file %s with %s transactions",
                     target_file,
@@ -173,6 +174,9 @@ class ImportRuleEngine:
                 bean_content = "\n\n".join(map(txn_to_text, change_set.add))
                 self.logger.info("New bean file content:\n%s", bean_content)
                 new_tree = parser.parse(bean_content)
+
+                # ensure parent dir exists
+                target_file.parent.mkdir(parents=True, exist_ok=True)
 
             if target_file.exists():
                 self.logger.info(
