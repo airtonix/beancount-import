@@ -1,16 +1,12 @@
 import decimal
+import pathlib
 from typing import Dict, List
-
-import pytz
 
 from beancount_importer_rules.data_types import Transaction
 from beancount_importer_rules.extractor import ExtractorCsvBase
 
 
 class MercuryCsvExtractor(ExtractorCsvBase):
-    date_format: str = "%m-%d-%Y"  # month-day-year hour:minute:second
-    datetime_format: str = "%m-%d-%Y %H:%M:%S"  # month-day-year hour:minute:second
-    date_field: str = "Date (UTC)"
     name: str = "mercury"
     fields: List[str] = [
         "Date (UTC)",
@@ -29,7 +25,13 @@ class MercuryCsvExtractor(ExtractorCsvBase):
         "Original Currency",
     ]
 
-    def process_line(self, lineno: int, line: Dict[str, str]) -> Transaction:
+    def process_line(
+        self,
+        lineno: int,
+        line: Dict[str, str],
+        file_path: pathlib.Path,
+        line_count: int,
+    ) -> Transaction:
         date = self.parse_date(line.pop("Date (UTC)"))
         desc = line.pop("Description")
         amount = decimal.Decimal(line.pop("Amount"))
@@ -43,13 +45,13 @@ class MercuryCsvExtractor(ExtractorCsvBase):
         name_on_card = line.pop("Name On Card")
         last_four_digits = line.pop("Last Four Digits")
         gl_code = line.pop("GL Code")
-        timestamp = pytz.UTC.localize(self.parse_time(line.pop("Timestamp")))
+        timestamp = self.parse_datetime(line.pop("Timestamp"))
 
         return Transaction(
             extractor=self.name,
-            file=self.filename,
+            file=str(file_path),
             lineno=lineno + 1,
-            reversed_lineno=lineno - self.line_count,
+            reversed_lineno=lineno - line_count,
             timezone="UTC",
             extra=line,
             # The following fields are unique to this extractor

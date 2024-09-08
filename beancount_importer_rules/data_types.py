@@ -25,9 +25,9 @@ class Transaction:
     # the unique id of the transaction
     transaction_id: str | None = None
     # date of the transaction
-    date: datetime.date | None = None
+    date: datetime.datetime | None = None
     # date when the transaction posted
-    post_date: datetime.date | None = None
+    post_date: datetime.datetime | None = None
     # timestamp of the transaction
     timestamp: datetime.datetime | None = None
     # timezone of the transaction, needs to be one of timezone value supported by pytz
@@ -82,7 +82,11 @@ class ImportBaseModel(BaseModel):
     pass
 
 
-class StrRegexMatch(ImportBaseModel):
+class MatchBaseModel(ImportBaseModel):
+    pass
+
+
+class StrRegexMatch(MatchBaseModel):
     """
 
     When a simple string value is provided, regular expression matching will be used. Here's an example:
@@ -105,8 +109,11 @@ class StrRegexMatch(ImportBaseModel):
     regex: str
     """Does the transaction field match the regular expression"""
 
+    def __str__(self) -> str:
+        return f"regex:{self.regex}"
 
-class StrExactMatch(ImportBaseModel):
+
+class StrExactMatch(MatchBaseModel):
     """
 
     To match an exact value, one can do this:
@@ -122,8 +129,11 @@ class StrExactMatch(ImportBaseModel):
     equals: str
     """Does the transaction field equal the value"""
 
+    def __str__(self) -> str:
+        return f"equals:{self.equals}"
 
-class StrOneOfMatch(ImportBaseModel):
+
+class StrOneOfMatch(MatchBaseModel):
     """
     To match values belonging to a list of values, one can do this:
 
@@ -141,8 +151,11 @@ class StrOneOfMatch(ImportBaseModel):
     one_of: list[str]
     """Does the transaction field match one of the values"""
 
+    def __str__(self) -> str:
+        return "one_of:{','.join(self.one_of)}"
 
-class StrPrefixMatch(ImportBaseModel):
+
+class StrPrefixMatch(MatchBaseModel):
     """
 
     To match values with a prefix, one can do this:
@@ -158,8 +171,11 @@ class StrPrefixMatch(ImportBaseModel):
     prefix: str
     """Does the transaction field start with the string"""
 
+    def __str__(self) -> str:
+        return f"prefix:{self.prefix}"
 
-class StrSuffixMatch(ImportBaseModel):
+
+class StrSuffixMatch(MatchBaseModel):
     """
 
     To match values with a suffix, one can do this:
@@ -175,8 +191,11 @@ class StrSuffixMatch(ImportBaseModel):
     suffix: str
     """Does the transaction field end with the string"""
 
+    def __str__(self) -> str:
+        return f"suffix:{self.suffix}"
 
-class StrContainsMatch(ImportBaseModel):
+
+class StrContainsMatch(MatchBaseModel):
     """
 
     To match values containing a string, one can do this:
@@ -193,8 +212,11 @@ class StrContainsMatch(ImportBaseModel):
     contains: str
     """Does the transaction field contain the string"""
 
+    def __str__(self) -> str:
+        return f"contains:{self.contains}"
 
-class DateBeforeMatch(ImportBaseModel):
+
+class DateBeforeMatch(MatchBaseModel):
     """
     To match values before a date, one can do this:
 
@@ -213,8 +235,11 @@ class DateBeforeMatch(ImportBaseModel):
     format: str
     """ The format of the date. used to parse the value date and the date to match"""
 
+    def __str__(self) -> str:
+        return f"date_before:{self.date_before}"
 
-class DateAfterMatch(ImportBaseModel):
+
+class DateAfterMatch(MatchBaseModel):
     """
     To match values after a date, one can do this:
 
@@ -232,8 +257,11 @@ class DateAfterMatch(ImportBaseModel):
     format: str
     """ The format of the date. used to parse the value date and the date to match"""
 
+    def __str__(self) -> str:
+        return f"date_after:{self.date_after}"
 
-class DateSameDayMatch(ImportBaseModel):
+
+class DateSameDayMatch(MatchBaseModel):
     """
     To match values with the same day, one can do this:
 
@@ -251,8 +279,11 @@ class DateSameDayMatch(ImportBaseModel):
     format: str
     """ The format of the date. used to parse the value date and the date to match"""
 
+    def __str__(self) -> str:
+        return f"date_same_day:{self.date_same_day}"
 
-class DateSameMonthMatch(ImportBaseModel):
+
+class DateSameMonthMatch(MatchBaseModel):
     """
     To match values with the same month, one can do this:
 
@@ -270,8 +301,11 @@ class DateSameMonthMatch(ImportBaseModel):
     format: str
     """ The format of the date. used to parse the value date and the date to match"""
 
+    def __str__(self) -> str:
+        return f"date_same_month:{self.date_same_month}"
 
-class DateSameYearMatch(ImportBaseModel):
+
+class DateSameYearMatch(MatchBaseModel):
     """
     To match values with the same year, one can do this:
 
@@ -288,6 +322,9 @@ class DateSameYearMatch(ImportBaseModel):
     """ The date to match on the year"""
     format: str
     """ The format of the date. used to parse the value date and the date to match"""
+
+    def __str__(self) -> str:
+        return f"date_same_year:{self.date_same_year}"
 
 
 StrMatch = (
@@ -965,6 +1002,7 @@ class ExractorInputConfig(ImportBaseModel):
     as_name: str | None = None
     date_format: str | None = None
     datetime_format: str | None = None
+    date_field: str | None = None
 
 
 class InputConfigDetails(ImportBaseModel):

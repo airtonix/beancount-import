@@ -1,4 +1,5 @@
 import decimal
+import pathlib
 from typing import Dict, List
 
 from beancount_importer_rules.data_types import Transaction
@@ -18,16 +19,18 @@ class AgrimasterCsvExtractor(ExtractorCsvBase):
         "Balance",
     ]
 
-    def process_line(self, lineno: int, line: Dict[str, str]) -> Transaction:
+    def process_line(
+        self, lineno: int, line: Dict[str, str], filename: pathlib.Path, line_count: int
+    ) -> Transaction:
         date = self.parse_date(line.pop("Date"))
         description = line.pop("Description")
         amount = decimal.Decimal(line.pop("Amount"))
 
         return Transaction(
             extractor=self.name,
-            file=self.filename,
+            file=str(filename),
             lineno=lineno + 1,
-            reversed_lineno=lineno - self.line_count,
+            reversed_lineno=lineno - line_count,
             extra=line,
             # The following fields are unique to this extractor
             date=date,

@@ -2,17 +2,19 @@ import logging
 import pathlib
 import typing
 
-import rich
 import yaml
 from beancount_black.formatter import Formatter
 from beancount_parser.parser import make_parser
 from jinja2.sandbox import SandboxedEnvironment
 from lark import Lark
-from rich import box
 from rich.logging import RichHandler
-from rich.markup import escape
-from rich.padding import Padding
-from rich.table import Table
+from rich.progress import (
+    BarColumn,
+    Progress,
+    TaskProgressColumn,
+    TextColumn,
+    TimeElapsedColumn,
+)
 
 from beancount_importer_rules.data_types import (
     DeletedTransaction,
@@ -26,7 +28,6 @@ from beancount_importer_rules.environment import (
 )
 from beancount_importer_rules.extractor import (
     ExtractorFactory,
-    create_extractor_factory,
 )
 from beancount_importer_rules.includes import resolve_includes
 from beancount_importer_rules.post_processor import (
@@ -35,7 +36,10 @@ from beancount_importer_rules.post_processor import (
     extract_existing_transactions,
     txn_to_text,
 )
-from beancount_importer_rules.processor import process_imports
+from beancount_importer_rules.processor.process_imports import (
+    inputconfig_list_to_dict,
+    process_imports,
+)
 from beancount_importer_rules.templates import make_environment
 from beancount_importer_rules.utils import strip_base_path
 
@@ -50,6 +54,19 @@ class IProcessedTransactionsMap:
     unprocessed_txns: list[UnprocessedTransaction] = []
 
 
+def load_config(config_path: pathlib.Path, workdir_path: pathlib.Path) -> ImportDoc:
+    with config_path.open("rt") as fo:
+        doc_payload = yaml.safe_load(fo)
+        import_doc = ImportDoc.model_validate(doc_payload)
+
+        imports = resolve_includes(
+            workdir_path=workdir_path, rules=import_doc.imports.root
+        )
+        import_doc.imports = imports
+
+        return import_doc
+
+
 class ImportRuleEngine:
     log_level: LogLevel = LogLevel.INFO
     logger: logging.Logger = logging.getLogger("beanhub_cli")
@@ -60,6 +77,12 @@ class ImportRuleEngine:
     template_env: SandboxedEnvironment
     extractor_factory = typing.Type[ExtractorFactory]
     parser = Lark
+    progress = Progress(
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        TaskProgressColumn(),
+        TimeElapsedColumn(),
+    )
 
     def __init__(
         self,
@@ -69,6 +92,7 @@ class ImportRuleEngine:
         remove_dangling: bool,
         log_level: str,
     ):
+        init_task = self.progress.add_task("Initialising", total=1)
         self.workdir_path = pathlib.Path(workdir).resolve()
         self.beanfile_path = pathlib.Path(self.workdir_path / beanfile_path).resolve()
         self.config_path = pathlib.Path(self.workdir_path / config_path).resolve()
@@ -83,36 +107,44 @@ class ImportRuleEngine:
             handlers=[RichHandler()],
             force=True,
         )
-        self.config = self.load_config(self.config_path)
+
         self.template_env = make_environment()
-        self.extractor_factory = create_extractor_factory(working_dir=self.workdir_path)
+        self.config = self.load_config(self.config_path)
+        self.progress.update(init_task, completed=1)
 
     def load_config(self, config_path: pathlib.Path):
-        with config_path.open("rt") as fo:
-            doc_payload = yaml.safe_load(fo)
+        task = self.progress.add_task("Loading config", total=1)
 
-            import_doc = ImportDoc.model_validate(doc_payload)
+        config = load_config(config_path=config_path, workdir_path=self.workdir_path)
 
-            self.logger.info(
-                "Loaded import doc from [green]%s[/]",
-                config_path,
-                extra={"markup": True, "highlighter": None},
-            )
-
-            return import_doc
-
-    def process_transaction(self):
-        output = IProcessedTransactionsMap()
-        imports = resolve_includes(
-            workdir_path=self.workdir_path, rules=self.config.imports.root
+        self.logger.info(
+            "Loaded import doc from [green]%s[/]",
+            config_path,
+            extra={"markup": True, "highlighter": None},
         )
 
-        transactions = process_imports(
-            inputs=self.config.inputs,
-            imports=imports,
-            context=self.config.context,
-            input_dir=self.workdir_path,
-            extractor_factory=self.extractor_factory,
+        self.progress.update(task, completed=1)
+        return config
+
+    def on_import_processed(self, txn):
+        pass
+
+    def on_transaction_processed(self, txn):
+        pass
+
+    def process_transactions(self):
+        output = IProcessedTransactionsMap()
+
+        transactions = self.progress.track(
+            process_imports(
+                inputs=inputconfig_list_to_dict(self.config.inputs),
+                imports=self.config.imports,
+                context=self.config.context,
+                input_dir=self.workdir_path,
+                on_import_processed=self.on_import_processed,
+                on_transaction_processed=self.on_transaction_processed,
+            ),
+            description="Processing",
         )
 
         for txn in transactions:
@@ -150,7 +182,9 @@ class ImportRuleEngine:
 
         return output
 
-    def changesets(self, transactions_map: IProcessedTransactionsMap, existing_txns):
+    def apply_changesets(
+        self, transactions_map: IProcessedTransactionsMap, existing_txns
+    ):
         change_sets = compute_changes(
             generated_txns=transactions_map.generated_txns,
             imported_txns=existing_txns,
@@ -201,24 +235,24 @@ class ImportRuleEngine:
                 formatter = Formatter()
                 formatter.format(new_tree, fo)  # type: ignore
 
-        table = Table(
-            title="Deleted transactions",
-            box=box.SIMPLE,
-            header_style=TABLE_HEADER_STYLE,
-            expand=True,
-        )
-        table.add_column("File", style=TABLE_COLUMN_STYLE)
-        table.add_column("Id", style=TABLE_COLUMN_STYLE)
-        deleted_txn_ids = frozenset(txn.id for txn in transactions_map.deleted_txns)
-        for target_file, change_set in change_sets.items():
-            for txn in change_set.remove:
-                if txn.id not in deleted_txn_ids:
-                    continue
-                table.add_row(
-                    escape(str(target_file)) + f":{txn.lineno}",
-                    str(txn.id),
-                )
-        rich.print(Padding(table, (1, 0, 0, 4)))
+        # table = Table(
+        #     title="Deleted transactions",
+        #     box=box.SIMPLE,
+        #     header_style=TABLE_HEADER_STYLE,
+        #     expand=True,
+        # )
+        # table.add_column("File", style=TABLE_COLUMN_STYLE)
+        # table.add_column("Id", style=TABLE_COLUMN_STYLE)
+        # deleted_txn_ids = frozenset(txn.id for txn in transactions_map.deleted_txns)
+        # for target_file, change_set in change_sets.items():
+        #     for txn in change_set.remove:
+        #         if txn.id not in deleted_txn_ids:
+        #             continue
+        #         table.add_row(
+        #             escape(str(target_file)) + f":{txn.lineno}",
+        #             str(txn.id),
+        #         )
+        # rich.print(Padding(table, (1, 0, 0, 4)))
 
         return change_sets
 
@@ -236,11 +270,12 @@ class ImportRuleEngine:
 
         parser = make_parser()
 
-        transactions_map = self.process_transaction()
+        transactions_map = self.process_transactions()
 
         self.logger.info(
             "Collecting existing imported transactions from Beancount books ..."
         )
+
         existing_txns = list(
             extract_existing_transactions(
                 parser=parser,
@@ -248,83 +283,84 @@ class ImportRuleEngine:
                 root_dir=self.workdir_path,
             )
         )
-        change_sets = self.changesets(transactions_map, existing_txns)
+
+        self.apply_changesets(transactions_map, existing_txns)
 
         self.logger.info(
             "Found %s existing imported transactions in Beancount books",
             len(existing_txns),
         )
 
-        dangling_action = "Delete" if self.remove_dangling else "Ignored"
-        table = Table(
-            title=f"Dangling Transactions ({dangling_action})",
-            box=box.SIMPLE,
-            header_style=TABLE_HEADER_STYLE,
-            expand=True,
-        )
-        table.add_column("File", style=TABLE_COLUMN_STYLE)
-        table.add_column("Id", style=TABLE_COLUMN_STYLE)
-        for target_file, change_set in change_sets.items():
-            if not change_set.dangling:
-                continue
+        # dangling_action = "Delete" if self.remove_dangling else "Ignored"
+        # table = Table(
+        #     title=f"Dangling Transactions ({dangling_action})",
+        #     box=box.SIMPLE,
+        #     header_style=TABLE_HEADER_STYLE,
+        #     expand=True,
+        # )
+        # table.add_column("File", style=TABLE_COLUMN_STYLE)
+        # table.add_column("Id", style=TABLE_COLUMN_STYLE)
+        # for target_file, change_set in change_sets.items():
+        #     if not change_set.dangling:
+        #         continue
 
-            for txn in change_set.dangling:
-                table.add_row(
-                    escape(str(target_file)) + f":{txn.lineno}",
-                    str(txn.id),
-                )
-        rich.print(Padding(table, (1, 0, 0, 4)))
+        #     for txn in change_set.dangling:
+        #         table.add_row(
+        #             escape(str(target_file)) + f":{txn.lineno}",
+        #             str(txn.id),
+        #         )
+        # rich.print(Padding(table, (1, 0, 0, 4)))
 
-        table = Table(
-            title="Generated transactions",
-            box=box.SIMPLE,
-            header_style=TABLE_HEADER_STYLE,
-            expand=True,
-        )
-        # TODO: add src info
-        table.add_column("File", style=TABLE_COLUMN_STYLE)
-        table.add_column("Id", style=TABLE_COLUMN_STYLE)
-        table.add_column("Source", style=TABLE_COLUMN_STYLE)
-        table.add_column("Date", style=TABLE_COLUMN_STYLE)
-        table.add_column("Narration", style=TABLE_COLUMN_STYLE)
-        for txn in transactions_map.generated_txns:
-            sources = str(":").join(txn.sources or [])
-            table.add_row(
-                escape(str(txn.file)),
-                str(txn.id),
-                escape(sources),
-                escape(str(txn.date)),
-                escape(txn.narration),
-            )
-        rich.print(Padding(table, (1, 0, 0, 4)))
+        # table = Table(
+        #     title="Generated transactions",
+        #     box=box.SIMPLE,
+        #     header_style=TABLE_HEADER_STYLE,
+        #     expand=True,
+        # )
+        # # TODO: add src info
+        # table.add_column("File", style=TABLE_COLUMN_STYLE)
+        # table.add_column("Id", style=TABLE_COLUMN_STYLE)
+        # table.add_column("Source", style=TABLE_COLUMN_STYLE)
+        # table.add_column("Date", style=TABLE_COLUMN_STYLE)
+        # table.add_column("Narration", style=TABLE_COLUMN_STYLE)
+        # for txn in transactions_map.generated_txns:
+        #     sources = str(":").join(txn.sources or [])
+        #     table.add_row(
+        #         escape(str(txn.file)),
+        #         str(txn.id),
+        #         escape(sources),
+        #         escape(str(txn.date)),
+        #         escape(txn.narration),
+        #     )
+        # rich.print(Padding(table, (1, 0, 0, 4)))
 
-        table = Table(
-            title="Unprocessed transactions",
-            box=box.SIMPLE,
-            header_style=TABLE_HEADER_STYLE,
-            expand=True,
-        )
-        table.add_column("File", style=TABLE_COLUMN_STYLE)
-        table.add_column("Line", style=TABLE_COLUMN_STYLE)
-        table.add_column("Id", style=TABLE_COLUMN_STYLE)
-        table.add_column("Extractor", style=TABLE_COLUMN_STYLE)
-        table.add_column("Date", style=TABLE_COLUMN_STYLE)
-        table.add_column("Desc", style=TABLE_COLUMN_STYLE)
-        table.add_column("Bank Desc", style=TABLE_COLUMN_STYLE)
-        table.add_column("Amount", style=TABLE_COLUMN_STYLE, justify="right")
-        table.add_column("Currency", style=TABLE_COLUMN_STYLE)
-        for txn in transactions_map.unprocessed_txns:
-            table.add_row(
-                escape(txn.txn.file or ""),
-                str(txn.txn.lineno),
-                txn.import_id,
-                escape(str(txn.txn.extractor)),
-                escape(str(txn.txn.date)) if txn.txn.date is not None else "",
-                escape(txn.txn.desc) if txn.txn.desc is not None else "",
-                escape(txn.txn.bank_desc) if txn.txn.bank_desc is not None else "",
-                escape(str(txn.txn.amount)) if txn.txn.amount is not None else "",
-                escape(txn.txn.currency) if txn.txn.currency is not None else "",
-            )
-        rich.print(Padding(table, (1, 0, 0, 4)))
+        # table = Table(
+        #     title="Unprocessed transactions",
+        #     box=box.SIMPLE,
+        #     header_style=TABLE_HEADER_STYLE,
+        #     expand=True,
+        # )
+        # table.add_column("File", style=TABLE_COLUMN_STYLE)
+        # table.add_column("Line", style=TABLE_COLUMN_STYLE)
+        # table.add_column("Id", style=TABLE_COLUMN_STYLE)
+        # table.add_column("Extractor", style=TABLE_COLUMN_STYLE)
+        # table.add_column("Date", style=TABLE_COLUMN_STYLE)
+        # table.add_column("Desc", style=TABLE_COLUMN_STYLE)
+        # table.add_column("Bank Desc", style=TABLE_COLUMN_STYLE)
+        # table.add_column("Amount", style=TABLE_COLUMN_STYLE, justify="right")
+        # table.add_column("Currency", style=TABLE_COLUMN_STYLE)
+        # for txn in transactions_map.unprocessed_txns:
+        #     table.add_row(
+        #         escape(txn.txn.file or ""),
+        #         str(txn.txn.lineno),
+        #         txn.import_id,
+        #         escape(str(txn.txn.extractor)),
+        #         escape(str(txn.txn.date)) if txn.txn.date is not None else "",
+        #         escape(txn.txn.desc) if txn.txn.desc is not None else "",
+        #         escape(txn.txn.bank_desc) if txn.txn.bank_desc is not None else "",
+        #         escape(str(txn.txn.amount)) if txn.txn.amount is not None else "",
+        #         escape(txn.txn.currency) if txn.txn.currency is not None else "",
+        #     )
+        # rich.print(Padding(table, (1, 0, 0, 4)))
 
         self.logger.info("done")
