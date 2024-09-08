@@ -297,6 +297,7 @@ StrMatch = (
     | StrExactMatch
     | StrContainsMatch
     | StrOneOfMatch
+    | StrRegexMatch
     | DateAfterMatch
     | DateBeforeMatch
     | DateSameDayMatch
@@ -691,7 +692,7 @@ class MetadataItemTemplate(ImportBaseModel):
 
     name: str
     """the name of the metadata"""
-    value: str
+    value: str | bool | int | None
     """the value of the metadata"""
 
 

@@ -22,4 +22,5 @@ inputs:
 
 imports:
   - include: "rules/fees.yml"
+  - include: "rules/with_regex.yml"
   - include: "rules/uknown.yml"

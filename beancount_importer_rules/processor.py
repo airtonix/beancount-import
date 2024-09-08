@@ -193,8 +193,9 @@ def process_transaction(
     processed = False
     matched_vars: dict | None = None
 
-    def render_str(value: str | None) -> str | None:
+    def render_str(value: str | bool | int | None) -> str | None:
         nonlocal matched_vars
+
         if value is None:
             return None
 
@@ -202,7 +203,7 @@ def process_transaction(
         if matched_vars is not None:
             template_ctx |= matched_vars
 
-        result_value = template_env.from_string(value).render(**template_ctx)
+        result_value = template_env.from_string(str(value)).render(**template_ctx)
 
         if omit_token is not None and result_value == omit_token:
             return None
@@ -273,7 +274,7 @@ def process_transaction(
                 constants.DEFAULT_TXN_TEMPLATE["id"],
             )
             rendered_txn_id = render_txn_id(txn_id)
-
+            print(f"Action: {action}")
             if action.type == ActionType.del_txn:
                 yield DeletedTransaction(id=rendered_txn_id)
                 processed = True

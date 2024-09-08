@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../../../schema-import.json
+
+- name: "Some pattern matching"
+  match:
+    desc: "Payment for "
+  actions:
+    - txn:
+        metadata:
+          - name: "with_regex"
+            value: "true"
+        postings:
+          - account: "Assets:Bank"
+          - account: "Expenses:Entertainment:Services"
+            amount:
+              number: "{{ -amount }}"
+              currency: "{{ currency | default('AUD', true) }}"
+
+- name: "Some pattern matching"
+  match:
+    desc: "Transfer to (.+)"
+  actions:
+    - txn:
+        metadata:
+          - name: "with_regex"
+            value: true
+          - name: "count"
+            value: 1
+        postings:
+          - account: "Assets:Bank"
+          - account: "Equity:Transfers"
+            amount:
+              number: "{{ -amount }}"
+              currency: "{{ currency | default('AUD', true) }}"
