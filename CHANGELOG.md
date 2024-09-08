@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.5](https://github.com/zenobi-us/beancount-importer-rules/compare/v0.1.4...v0.1.5) (2024-09-08)
+
+
+### Bug Fixes
+
+* writing to a non existing directory no longer fails ([#21](https://github.com/zenobi-us/beancount-importer-rules/issues/21)) ([4150fdd](https://github.com/zenobi-us/beancount-importer-rules/commit/4150fdde60214c7266ce36a0595491cbfa3371f7))
+
 ## [0.1.4](https://github.com/zenobi-us/beancount-importer-rules/compare/v0.1.3...v0.1.4) (2024-09-07)
 
 
