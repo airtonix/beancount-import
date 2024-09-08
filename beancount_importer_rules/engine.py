@@ -161,8 +161,10 @@ class ImportRuleEngine:
         parser = make_parser()
 
         for target_file, change_set in change_sets.items():
-            if change_set.remove or change_set.update and not target_file.exists():
-                raise ValueError("Expect new transactions to add only")
+            if not target_file.exists() and (change_set.remove or change_set.update):
+                raise ValueError(
+                    f"Computed update or remove to non-existing file {target_file}"
+                )
 
             if not target_file.exists():
                 self.logger.info(
