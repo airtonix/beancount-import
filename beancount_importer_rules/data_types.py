@@ -92,6 +92,14 @@ class StrRegexMatch(ImportBaseModel):
     - match:
         desc: "^DoorDash (.+)"
     ```
+    or
+    ```YAML
+    imports:
+    - match:
+        desc:
+          regex: "^DoorDash (.+)"
+    ```
+
     """
 
     regex: str
@@ -107,7 +115,7 @@ class StrExactMatch(ImportBaseModel):
     imports:
     - match:
         desc:
-        equals: "DoorDash"
+          equals: "DoorDash"
     ```
     """
 
@@ -123,7 +131,7 @@ class StrOneOfMatch(ImportBaseModel):
     imports:
     - match:
         desc:
-        one_of:
+          one_of:
             - DoorDash
             - UberEats
             - Postmate
@@ -143,7 +151,7 @@ class StrPrefixMatch(ImportBaseModel):
     imports:
     - match:
         desc:
-        prefix: "DoorDash"
+          prefix: "DoorDash"
     ```
     """
 
@@ -160,7 +168,7 @@ class StrSuffixMatch(ImportBaseModel):
     imports:
     - match:
         desc:
-        suffix: "DoorDash"
+          suffix: "DoorDash"
     ```
     """
 
@@ -177,7 +185,7 @@ class StrContainsMatch(ImportBaseModel):
     imports:
     - match:
         desc:
-        contains: "DoorDash"
+          contains: "DoorDash"
     ```
 
     """
@@ -193,8 +201,9 @@ class DateBeforeMatch(ImportBaseModel):
     ```YAML
     imports:
     - match:
-        date_before: "2021-01-01"
-        format: "%Y-%m-%d"
+        date:
+          date_before: "2021-01-01"
+          format: "%Y-%m-%d"
     ```
 
     """
@@ -212,8 +221,9 @@ class DateAfterMatch(ImportBaseModel):
     ```YAML
     imports:
     - match:
-        date_after: "2021-01-01"
-        format: "%Y-%m-%d"
+        date:
+          date_after: "2021-01-01"
+          format: "%Y-%m-%d"
     ```
     """
 
@@ -230,8 +240,9 @@ class DateSameDayMatch(ImportBaseModel):
     ```YAML
     imports:
     - match:
-        date_same_day: "2021-01-01"
-        format: "%Y-%m-%d"
+        date:
+          date_same_day: "2021-01-01"
+          format: "%Y-%m-%d"
     ```
     """
 
@@ -248,8 +259,9 @@ class DateSameMonthMatch(ImportBaseModel):
     ```YAML
     imports:
     - match:
-        date_same_month: "2021-01-01"
-        format: "%Y-%m-%d"
+        date:
+          date_same_month: "2021-01-01"
+          format: "%Y-%m-%d"
     ```
     """
 
@@ -266,8 +278,9 @@ class DateSameYearMatch(ImportBaseModel):
     ```YAML
     imports:
     - match:
-        date_same_year: "2021-01-01"
-        format: "%Y-%m-%d"
+        date:
+          date_same_year: "2021-01-01"
+          format: "%Y-%m-%d"
     ```
     """
 

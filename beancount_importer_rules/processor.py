@@ -77,6 +77,8 @@ def match_str(pattern: StrMatch | None, value: str | None) -> bool:
 
     if isinstance(pattern, str):
         return re.match(pattern, value) is not None
+    elif isinstance(pattern, StrRegexMatch):
+        return re.match(pattern.regex, value) is not None
     elif isinstance(pattern, StrExactMatch):
         return value == pattern.equals
     elif isinstance(pattern, StrPrefixMatch):
