@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.6](https://github.com/zenobi-us/beancount-importer-rules/compare/v0.1.5...v0.1.6) (2024-09-08)
+
+
+### Bug Fixes
+
+* regex matcher  ([#24](https://github.com/zenobi-us/beancount-importer-rules/issues/24)) ([05a95e2](https://github.com/zenobi-us/beancount-importer-rules/commit/05a95e2cffecb0801edecdbf2faf59f4e8496555))
+
 ## [0.1.5](https://github.com/zenobi-us/beancount-importer-rules/compare/v0.1.4...v0.1.5) (2024-09-08)
 
 
