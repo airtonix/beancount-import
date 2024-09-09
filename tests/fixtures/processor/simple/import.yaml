@@ -16,6 +16,10 @@ inputs:
     config:
       extractor:
         import_path: tests.fixtures.importer.mercury:MercuryCsvExtractor
+        as_name: mercury
+        date_format: "MM-DD-YYYY"
+        datetime_format: "MM-DD-YYYY HH:mm:ss"
+        date_field: Date (UTC)
       prepend_postings:
         - account: Assets:Bank:US:Mercury
           amount:

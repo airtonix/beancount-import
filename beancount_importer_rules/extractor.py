@@ -4,10 +4,13 @@ import csv
 import datetime
 import hashlib
 import os
+import pathlib
 import sys
 import typing
 from importlib import import_module
 from pathlib import Path
+
+import arrow
 
 from beancount_importer_rules.data_types import (
     ExractorInputConfig,
@@ -125,39 +128,41 @@ class ExtractorBase:
     ```
     """
 
-    input_file: typing.TextIO
-    """The input file to be processed"""
+    name: str = "extractor"
+    date_field: str = "Date"
+    date_format: str = "%Y-%m-%d"
+    datetime_format: str = "%Y-%m-%d %H:%M:%S"
 
-    def __init__(self, input_file: typing.TextIO | None = None):
-        if input_file is None:
-            raise ExtractorClassInvalidInputFileError(
-                module=self.__module__,
-                klass_name=self.__class__.__name__,
-            )
-        self.input_file = input_file
-
-        self.filename = None
-        if not hasattr(self.input_file, "name"):
-            raise ExtractorClassInvalidInputMissingFileNameError(
-                module=self.__module__,
-                klass_name=self.__class__.__name__,
-            )
-
-        self.filename = self.input_file.name
+    def __init__(
+        self,
+        name: str | None = None,
+        date_field: str | None = None,
+        date_format: str | None = None,
+        datetime_format: str | None = None,
+    ):
+        self.name = name or self.name
+        self.date_field = date_field or self.date_field
+        self.date_format = date_format or self.date_format
+        self.datetime_format = datetime_format or self.datetime_format
 
     def get_import_id_template(self) -> str:
         return DEFAULT_IMPORT_ID_TEMPLATE
 
-    def detect(self) -> bool:
+    def detect(self, file_path: pathlib.Path) -> bool:
         raise NotImplementedError()
 
-    def fingerprint(self) -> Fingerprint | None:
+    def fingerprint(self, file_path: pathlib.Path) -> Fingerprint | None:
         raise NotImplementedError()
 
     def parse_date(self, date_str: str) -> datetime.date:
         raise NotImplementedError()
 
-    def process(self) -> typing.Generator[Transaction, None, None]:
+    def parse_datetime(self, date_str: str) -> datetime.datetime:
+        raise NotImplementedError()
+
+    def process(
+        self, file_path: pathlib.Path
+    ) -> typing.Generator[Transaction, None, None]:
         raise NotImplementedError()
 
 
@@ -183,97 +188,76 @@ class ExtractorCsvBase(ExtractorBase):
     ```
     """
 
-    date_format: str = "%d/%m/%Y"
-    """The date format the CSV file uses"""
-
-    datetime_format: str = "%d/%m/%Y %H:%M:%S"
-    """The datetime format the CSV file uses"""
-
-    date_field: str = "Date"
-    """The date field in the CSV file"""
-
     fields: typing.List[str]
     """The fields in the CSV file"""
-
-    linecount: int = 0
-    """The number of lines in the CSV file. Computed on initialization"""
-
-    def __init__(self, input_file: typing.TextIO | None = None):
-        super().__init__(input_file)
-
-        line_count_reader = csv.DictReader(self.input_file)
-        line_count = 0
-
-        for _ in line_count_reader:
-            line_count += 1
-
-        self.line_count = line_count
+    delimiter: str = ","
+    """The delimiter used in the CSV file"""
 
     def parse_date(self, date_str: str) -> datetime.date:
         """
-        Parse a date string using the self.date_format
+        Parse a date string using the self.format
         """
-        return datetime.datetime.strptime(date_str, self.date_format).date()
+        return arrow.get(date_str, self.date_format).date()
 
-    def parse_time(self, date_str: str) -> datetime.datetime:
+    def parse_datetime(self, date_str: str) -> datetime.datetime:
         """
-        Parse a date string using the self.date_format
+        Parse a date string using the self.format
         """
-        return datetime.datetime.strptime(date_str, self.datetime_format)
+        return arrow.get(date_str, self.datetime_format).datetime
 
-    def fingerprint(self) -> Fingerprint | None:
+    def get_linecount(self, file_path: pathlib.Path) -> int:
+        """
+        Get the number of lines in a file
+        """
+        return sum(1 for i in open(file_path, "rb"))
+
+    def fingerprint(self, file_path: pathlib.Path) -> Fingerprint | None:
         """
         Generate a fingerprint for the CSV file
         """
-        if self.input_file is None:
-            raise ValueError("input_file is None")
+        with open(file_path, "r") as file_contents:
+            file_contents.seek(0, os.SEEK_SET)  # noqa: F821
 
-        reader = csv.DictReader(self.input_file)
-        if reader.fieldnames is None:
-            return
+            reader = csv.DictReader(file_contents)
+            if reader.fieldnames is None:
+                return
 
-        row = None
-        for row in reader:
-            pass
+            row = None
+            for row in reader:
+                pass
 
-        if row is None:
-            return
+            if row is None:
+                return
 
-        hash = hashlib.sha256()
-        for field in reader.fieldnames:
-            hash.update(row[field].encode("utf8"))
+            hash = hashlib.sha256()
+            for field in reader.fieldnames:
+                hash.update(row[field].encode("utf8"))
 
-        return Fingerprint(
-            starting_date=self.parse_date(row[self.date_field]),
-            first_row_hash=hash.hexdigest(),
-        )
+            return Fingerprint(
+                starting_date=self.parse_date(row[self.date_field]),
+                first_row_hash=hash.hexdigest(),
+            )
 
-    def detect(self) -> bool:
+    def detect(self, file_path: pathlib.Path) -> bool:
         """
         Check if the input file is a CSV file with the expected
         fields. Should this extractor be used to process the file?
         """
-        if not hasattr(self.input_file, "name"):
-            return False
-
         if self.fields is None:
             raise ExtractorClassIncorrectlyCraftedError(
                 module=self.__module__,
                 klass_name=self.__class__.__name__,
             )
 
-        if self.input_file is None:
-            raise ExtractorClassInvalidInputFileError(
-                module=self.__module__, klass_name=self.__class__.__name__
-            )
+        with open(file_path, "r") as file_contents:
+            file_contents.seek(0, os.SEEK_SET)  # noqa: F821
+            reader = csv.DictReader(file_contents)
+            try:
+                return reader.fieldnames == self.fields
+            except Exception:
+                return False
 
-        reader = csv.DictReader(self.input_file)
-        try:
-            return reader.fieldnames == self.fields
-        except Exception:
-            return False
-
-    def detect_has_header(self) -> bool:
+    def detect_has_header(self, file_path: pathlib.Path) -> bool:
         """
         Check if the supplied csv file has a header row.
 
@@ -285,27 +269,26 @@ class ExtractorCsvBase(ExtractorBase):
         header row or not and will return the first row as data if the
         fieldnames attribute is not set.
         """
-        if not hasattr(self.input_file, "name"):
-            return False
-
         if self.fields is None:
             raise ExtractorClassIncorrectlyCraftedError(
                 module=self.__module__,
                 klass_name=self.__class__.__name__,
             )
 
-        if self.input_file is None:
-            raise ExtractorClassInvalidInputFileError(
-                module=self.__module__, klass_name=self.__class__.__name__
-            )
+        with open(file_path, "r") as file_contents:
+            file_contents.seek(0, os.SEEK_SET)  # noqa: F821
+            reader = csv.DictReader(file_contents)
+            file_contents.seek(0, os.SEEK_SET)  # noqa: F821
 
-        reader = csv.DictReader(self.input_file)
-        try:
-            return reader.fieldnames == self.fields
-        except Exception:
-            return False
+            try:
+                outcome = reader.fieldnames == self.fields
+                return outcome
+            except Exception:
+                return False
 
-    def process_line(self, lineno: int, line: dict) -> Transaction:
+    def process_line(
+        self, lineno: int, line: dict, file_path: pathlib.Path, line_count: int
+    ) -> Transaction:
         """
         Process a line in the CSV file and return a transaction.
 
@@ -313,17 +296,29 @@ class ExtractorCsvBase(ExtractorBase):
         """
         raise NotImplementedError()
 
-    def process(self) -> typing.Generator[Transaction, None, None]:
+    def process(
+        self, file_path: pathlib.Path
+    ) -> typing.Generator[Transaction, None, None]:
         """
         Process the CSV file and yield transactions.
 
         Loops over the rows in the CSV file and yields a transaction for each row by calling
         [`process_line`](beancount_importer_rules.extractor.ExtractorCsvBase.process_line).
         """
+        has_header = self.detect_has_header(file_path)
+        line_count = self.get_linecount(file_path)
 
-        self.input_file.seek(os.SEEK_SET, 0)
-        start_row = self.detect_has_header() and 1 or 0
-        reader = csv.DictReader(self.input_file, fieldnames=self.fields)
+        with open(file_path, "r") as file_contents:
+            if has_header:
+                reader = csv.DictReader(file_contents, delimiter=self.delimiter)
+            else:
+                reader = csv.DictReader(
+                    file_contents, fieldnames=self.fields, delimiter=self.delimiter
+                )
 
-        for lineno, line in enumerate(reader, start=start_row):
-            yield self.process_line(lineno, line)
+            for lineno, line in enumerate(reader, start=has_header and 1 or 0):
+                txn = self.process_line(
+                    lineno=lineno, line=line, file_path=file_path, line_count=line_count
+                )
+
+                yield txn

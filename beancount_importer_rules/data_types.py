@@ -82,7 +82,11 @@ class ImportBaseModel(BaseModel):
     pass
 
 
-class StrRegexMatch(ImportBaseModel):
+class MatchBaseModel(ImportBaseModel):
+    pass
+
+
+class StrRegexMatch(MatchBaseModel):
     """
 
     When a simple string value is provided, regular expression matching will be used. Here's an example:
@@ -105,8 +109,11 @@ class StrRegexMatch(ImportBaseModel):
     regex: str
     """Does the transaction field match the regular expression"""
 
+    def __str__(self) -> str:
+        return f"regex:{self.regex}"
 
-class StrExactMatch(ImportBaseModel):
+
+class StrExactMatch(MatchBaseModel):
     """
 
     To match an exact value, one can do this:
@@ -122,8 +129,11 @@ class StrExactMatch(ImportBaseModel):
     equals: str
     """Does the transaction field equal the value"""
 
+    def __str__(self) -> str:
+        return f"equals:{self.equals}"
 
-class StrOneOfMatch(ImportBaseModel):
+
+class StrOneOfMatch(MatchBaseModel):
     """
     To match values belonging to a list of values, one can do this:
 
@@ -141,8 +151,11 @@ class StrOneOfMatch(ImportBaseModel):
     one_of: list[str]
     """Does the transaction field match one of the values"""
 
+    def __str__(self) -> str:
+        return "one_of:{','.join(self.one_of)}"
 
-class StrPrefixMatch(ImportBaseModel):
+
+class StrPrefixMatch(MatchBaseModel):
     """
 
     To match values with a prefix, one can do this:
@@ -158,8 +171,11 @@ class StrPrefixMatch(ImportBaseModel):
     prefix: str
     """Does the transaction field start with the string"""
 
+    def __str__(self) -> str:
+        return f"prefix:{self.prefix}"
 
-class StrSuffixMatch(ImportBaseModel):
+
+class StrSuffixMatch(MatchBaseModel):
     """
 
     To match values with a suffix, one can do this:
@@ -175,8 +191,11 @@ class StrSuffixMatch(ImportBaseModel):
     suffix: str
     """Does the transaction field end with the string"""
 
+    def __str__(self) -> str:
+        return f"suffix:{self.suffix}"
 
-class StrContainsMatch(ImportBaseModel):
+
+class StrContainsMatch(MatchBaseModel):
     """
 
     To match values containing a string, one can do this:
@@ -193,8 +212,11 @@ class StrContainsMatch(ImportBaseModel):
     contains: str
     """Does the transaction field contain the string"""
 
+    def __str__(self) -> str:
+        return f"contains:{self.contains}"
 
-class DateBeforeMatch(ImportBaseModel):
+
+class DateBeforeMatch(MatchBaseModel):
     """
     To match values before a date, one can do this:
 
@@ -213,8 +235,11 @@ class DateBeforeMatch(ImportBaseModel):
     format: str
     """ The format of the date. used to parse the value date and the date to match"""
 
+    def __str__(self) -> str:
+        return f"date_before:{self.date_before}"
 
-class DateAfterMatch(ImportBaseModel):
+
+class DateAfterMatch(MatchBaseModel):
     """
     To match values after a date, one can do this:
 
@@ -232,8 +257,11 @@ class DateAfterMatch(ImportBaseModel):
     format: str
     """ The format of the date. used to parse the value date and the date to match"""
 
+    def __str__(self) -> str:
+        return f"date_after:{self.date_after}"
 
-class DateSameDayMatch(ImportBaseModel):
+
+class DateSameDayMatch(MatchBaseModel):
     """
     To match values with the same day, one can do this:
 
@@ -251,8 +279,11 @@ class DateSameDayMatch(ImportBaseModel):
     format: str
     """ The format of the date. used to parse the value date and the date to match"""
 
+    def __str__(self) -> str:
+        return f"date_same_day:{self.date_same_day}"
 
-class DateSameMonthMatch(ImportBaseModel):
+
+class DateSameMonthMatch(MatchBaseModel):
     """
     To match values with the same month, one can do this:
 
@@ -270,8 +301,11 @@ class DateSameMonthMatch(ImportBaseModel):
     format: str
     """ The format of the date. used to parse the value date and the date to match"""
 
+    def __str__(self) -> str:
+        return f"date_same_month:{self.date_same_month}"
 
-class DateSameYearMatch(ImportBaseModel):
+
+class DateSameYearMatch(MatchBaseModel):
     """
     To match values with the same year, one can do this:
 
@@ -288,6 +322,9 @@ class DateSameYearMatch(ImportBaseModel):
     """ The date to match on the year"""
     format: str
     """ The format of the date. used to parse the value date and the date to match"""
+
+    def __str__(self) -> str:
+        return f"date_same_year:{self.date_same_year}"
 
 
 StrMatch = (
@@ -557,33 +594,33 @@ class TxnMatchVars(ImportBaseModel):
     - name: PG&E Gas
         match:
         extractor:
-            equals: "plaid"
+          equals: "plaid"
         desc:
-            prefix: "PGANDE WEB ONLINE "
+          prefix: "PGANDE WEB ONLINE "
         actions:
         - txn:
             payee: "{{ payee }}"
             narration: "Paid American Express Blue Cash Everyday"
             postings:
-                - account: "Expenses:Util:Gas:PGE"
-                amount:
-                    number: "{{ -amount }}"
-                    currency: "{{ currency | default('USD', true) }}"
+            - account: "Expenses:Util:Gas:PGE"
+              amount:
+                number: "{{ -amount }}"
+                currency: "{{ currency | default('USD', true) }}"
 
     - name: Comcast
-        match:
+      match:
         extractor:
-            equals: "plaid"
+          equals: "plaid"
         desc: "Comcast"
-        actions:
-        - txn:
-            payee: "{{ payee }}"
-            narration: "Comcast"
-            postings:
-                - account: "Expenses:Util:Internet:Comcast"
-                amount:
-                    number: "{{ -amount }}"
-                    currency: "{{ currency | default('USD', true) }}"
+      actions:
+      - txn:
+          payee: "{{ payee }}"
+          narration: "Comcast"
+          postings:
+          - account: "Expenses:Util:Internet:Comcast"
+            amount:
+              number: "{{ -amount }}"
+              currency: "{{ currency | default('USD', true) }}"
     ```
 
     With match and variables, you can write:
@@ -591,30 +628,30 @@ class TxnMatchVars(ImportBaseModel):
     ```yaml
     imports:
     - name: Household expenses
-        common_cond:
+      common_cond:
         extractor:
-            equals: "plaid"
-        match:
-        - cond:
-            desc:
-                prefix: "PGANDE WEB ONLINE "
-            vars:
-            account: "Expenses:Util:Gas:PGE"
-            narration: "Paid American Express Blue Cash Everyday"
-        - cond:
-            desc: "Comcast"
-            vars:
-            account: "Expenses:Housing:Util:Internet:Comcast"
-            narration: "Comcast"
-        actions:
-        - txn:
-            payee: "{{ payee }}"
-            narration: "{{ narration }}"
-            postings:
-                - account: "{{ account } "
-                amount:
-                    number: "{{ -amount }}"
-                    currency: "{{ currency | default('USD', true) }}"
+          equals: "plaid"
+      match:
+      - cond:
+          desc:
+              prefix: "PGANDE WEB ONLINE "
+          vars:
+          account: "Expenses:Util:Gas:PGE"
+          narration: "Paid American Express Blue Cash Everyday"
+      - cond:
+          desc: "Comcast"
+          vars:
+          account: "Expenses:Housing:Util:Internet:Comcast"
+          narration: "Comcast"
+      actions:
+      - txn:
+          payee: "{{ payee }}"
+          narration: "{{ narration }}"
+          postings:
+          - account: "{{ account } "
+              amount:
+                number: "{{ -amount }}"
+                currency: "{{ currency | default('USD', true) }}"
     ```
 
     The `common_cond` is the condition to meet for all the matches. Instead of a map, you define
@@ -965,6 +1002,7 @@ class ExractorInputConfig(ImportBaseModel):
     as_name: str | None = None
     date_format: str | None = None
     datetime_format: str | None = None
+    date_field: str | None = None
 
 
 class InputConfigDetails(ImportBaseModel):
@@ -1065,41 +1103,41 @@ class ImportDoc(ImportBaseModel):
 
     Examples
 
-    ```YAML
+    ```yaml title="import-config.yml", hl_lines="4 7 11"
     # yaml-language-server: $schema=https://raw.githubusercontent.com/zenobi-us/beancount-importer-rules/master/schema.json
 
-    # 📚 pathname is relative to the workspace root
-    # 🐍 import path is relative to the workspace root
-
-
     inputs:
-    - match: "sources/*.csv" # 📚
-        config:
+    - match: "sources/*.csv" # (1)
+      config:
         extractor:
-            import_path: "extractors.my_extractor:YourExtractorClass" # 🐍
-            name: "custom name for this extractor instance"
+            import_path: "extractors.my_extractor:YourExtractorClass" # (2)
+            as_name: "custom name for this extractor instance"
             date_format: "%Y-%m-%d"
             datetime_format: "%Y-%m-%d %H:%M:%S"
-        default_file: "books/{{ date.year }}.bean" # 📚
+        default_file: "books/{{ date.year }}.bean" # (3)
         prepend_postings:
             - account: "Assets:Bank"
 
     imports:
     - name: "simple"
         match:
-        desc: "Simple Transaction"
+          desc: "Simple Transaction"
         actions:
         - type: "add_txn"
-            txn:
+          txn:
             date: "2021-01-01"
             flag: "*"
             narration: "Simple Transaction"
             postings:
                 - account: "Expenses:Simple"
-                amount:
+                  amount:
                     number: "{{ amount }}"
                     currency: "USD"
     ```
+
+    1. pathname is relative to the workspace root
+    2. import path is relative to the workspace root
+    3. pathname is relative to the workspace root
 
 
     You can view the [schema](https://raw.githubusercontent.com/zenobi-us/beancount-importer-rules/master/schema.json) for more details

@@ -90,8 +90,9 @@ def import_cmd(
         ╰── importer_config.yaml
     ```
 
-    The `import_cmd` command will import transactions from
-    the `csv` directory to the `imported` directory.
+    The `import_cmd` command will import matching transactions
+    found in matching files the `sources` directory to the
+    `imported` directory.
 
     ```sh
     > beancount-import import \\
@@ -114,6 +115,7 @@ def import_cmd(
           Your `data.bean` should import `accounts.bean`, `imported.bean`.
 
           This way, you can keep your data and options separate from your main beanfile.
+
           But more importantly, we recommend this because beancount-importer-rules doesn't
           understand some of the syntax used for options.
 
@@ -131,6 +133,10 @@ def import_cmd(
 
 @cli.command(name="schema")
 def schema_cmd():
+    """
+    Generate JSON schema for the ImportDoc and ImportList data types.
+    """
+
     output_file_name = "schema.json"
     listoutput_file_name = "schema-import.json"
     with open(output_file_name, "w") as f:

@@ -1,7 +1,7 @@
 {
   "$defs": {
     "ActionAddTxn": {
-      "description": "Add a transaction to the beancount file.",
+      "description": "Add a transaction to the beancount file.\n\nThis is the default action type. If your action does not specify a type, it will be assumed to be an add transaction action.\n\nThe following keys are available for the add transaction action:\n\n- `file`: output beancount file name to write the transaction to\n- `txn`: the template of the transaction to insert\n\nA transaction template is an object that contains the following keys:\n\n- `id`: the optional `import-id` to overwrite the default one. By default, `{{ file | as_posix_path }}:{{ lineno }}` will be used unless the extractor provides a default value.\n- `date`: the optional date value to overwrite the default one. By default, `{{ date }}` will be used.\n- `flag`: the optional flag value to overwrite the default one. By default, `*` will be used.\n- `narration`: the optional narration value to overwrite the default one. By default `{{ desc | default(bank_desc, true) }}` will be used.\n- `payee`: the optional payee value of the transaction.\n- `tags`: an optional list of tags for the transaction\n- `links`: an optional list of links for the transaction\n- `metadata`: an optional list of `name` and `value` objects as the metadata items for the transaction.\n- `postings`: a list of templates for postings in the transaction.\n\nThe structure of the posting template object looks like this.\n\n- `account`: the account of posting\n- `amount`: the optional amount object with `number` and `currency` keys\n- `price`: the optional amount object with `number` and `currency` keys\n- `cost`: the optional template of cost spec",
       "properties": {
         "type": {
           "const": "add_txn",
@@ -35,7 +35,7 @@
       "type": "object"
     },
     "ActionDelTxn": {
-      "description": "Delete a transaction from the beancount file.",
+      "description": "Delete a transaction from the beancount file.\n\n\nThe following keys are available for the delete transaction action:\n\n- `txn`: the template of the transaction to insert\n\nA deleting transaction template is an object that contains the following keys:\n\n- `id`: the `import-id` value for ensuring transactions to be deleted. By default, `{{ file | as_posix_path }}:{{ lineno }}` will be used unless the extractor provides a default value.",
       "properties": {
         "type": {
           "const": "del_txn",
@@ -57,7 +57,7 @@
       "type": "object"
     },
     "ActionIgnore": {
-      "description": "Ignore the transaction.\n\nThis prevents the transaction from being added to the beancount file.",
+      "description": "Ignore the transaction.\n\nThis prevents the transaction from being added to the beancount file.\n\nSometimes, we are not interested in some transactions, but if we don't process them, you will still see them\nappear in the \"unprocessed transactions\" section of the report provided by our command line tool.\nTo mark one transaction as processed, you can simply use the `ignore` action like this:\n\n```YAML\n- name: Ignore unused entries\n  match:\n    extractor:\n      equals: \"mercury\"\n    desc:\n      one_of:\n        - Mercury Credit\n        - Mercury Checking xx1234\n  actions:\n    - type: ignore\n```",
       "properties": {
         "type": {
           "const": "ignore",
@@ -103,7 +103,7 @@
       "type": "object"
     },
     "DateAfterMatch": {
-      "description": "To match values after a date, one can do this:\n\n```YAML\nimports:\n- match:\n    date_after: \"2021-01-01\"\n    format: \"%Y-%m-%d\"\n```",
+      "description": "To match values after a date, one can do this:\n\n```YAML\nimports:\n- match:\n    date:\n      date_after: \"2021-01-01\"\n      format: \"%Y-%m-%d\"\n```",
       "properties": {
         "date_after": {
           "title": "Date After",
@@ -122,7 +122,7 @@
       "type": "object"
     },
     "DateBeforeMatch": {
-      "description": "To match values before a date, one can do this:\n\n```YAML\nimports:\n- match:\n    date_before: \"2021-01-01\"\n    format: \"%Y-%m-%d\"\n```",
+      "description": "To match values before a date, one can do this:\n\n```YAML\nimports:\n- match:\n    date:\n      date_before: \"2021-01-01\"\n      format: \"%Y-%m-%d\"\n```",
       "properties": {
         "date_before": {
           "title": "Date Before",
@@ -141,7 +141,7 @@
       "type": "object"
     },
     "DateSameDayMatch": {
-      "description": "To match values with the same day, one can do this:\n\n```YAML\nimports:\n- match:\n    date_same_day: \"2021-01-01\"\n    format: \"%Y-%m-%d\"\n```",
+      "description": "To match values with the same day, one can do this:\n\n```YAML\nimports:\n- match:\n    date:\n      date_same_day: \"2021-01-01\"\n      format: \"%Y-%m-%d\"\n```",
       "properties": {
         "date_same_day": {
           "title": "Date Same Day",
@@ -160,7 +160,7 @@
       "type": "object"
     },
     "DateSameMonthMatch": {
-      "description": "To match values with the same month, one can do this:\n\n```YAML\nimports:\n- match:\n    date_same_month: \"2021-01-01\"\n    format: \"%Y-%m-%d\"\n```",
+      "description": "To match values with the same month, one can do this:\n\n```YAML\nimports:\n- match:\n    date:\n      date_same_month: \"2021-01-01\"\n      format: \"%Y-%m-%d\"\n```",
       "properties": {
         "date_same_month": {
           "title": "Date Same Month",
@@ -179,7 +179,7 @@
       "type": "object"
     },
     "DateSameYearMatch": {
-      "description": "To match values with the same year, one can do this:\n\n```YAML\nimports:\n- match:\n    date_same_year: \"2021-01-01\"\n    format: \"%Y-%m-%d\"\n```",
+      "description": "To match values with the same year, one can do this:\n\n```YAML\nimports:\n- match:\n    date:\n      date_same_year: \"2021-01-01\"\n      format: \"%Y-%m-%d\"\n```",
       "properties": {
         "date_same_year": {
           "title": "Date Same Year",
@@ -257,6 +257,18 @@
           ],
           "default": null,
           "title": "Datetime Format"
+        },
+        "date_field": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Date Field"
         }
       },
       "required": [
@@ -370,6 +382,7 @@
       "type": "object"
     },
     "InputConfig": {
+      "description": "The input configuration for the import rule.",
       "properties": {
         "match": {
           "anyOf": [
@@ -397,6 +410,7 @@
       "type": "object"
     },
     "InputConfigDetails": {
+      "description": "The input configuration details for the import rule.",
       "properties": {
         "extractor": {
           "$ref": "#/$defs/ExractorInputConfig"
@@ -469,8 +483,21 @@
           "type": "string"
         },
         "value": {
-          "title": "Value",
-          "type": "string"
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Value"
         }
       },
       "required": [
@@ -580,6 +607,9 @@
               "$ref": "#/$defs/StrOneOfMatch"
             },
             {
+              "$ref": "#/$defs/StrRegexMatch"
+            },
+            {
               "$ref": "#/$defs/DateAfterMatch"
             },
             {
@@ -620,6 +650,9 @@
             },
             {
               "$ref": "#/$defs/StrOneOfMatch"
+            },
+            {
+              "$ref": "#/$defs/StrRegexMatch"
             },
             {
               "$ref": "#/$defs/DateAfterMatch"
@@ -664,6 +697,9 @@
               "$ref": "#/$defs/StrOneOfMatch"
             },
             {
+              "$ref": "#/$defs/StrRegexMatch"
+            },
+            {
               "$ref": "#/$defs/DateAfterMatch"
             },
             {
@@ -704,6 +740,9 @@
             },
             {
               "$ref": "#/$defs/StrOneOfMatch"
+            },
+            {
+              "$ref": "#/$defs/StrRegexMatch"
             },
             {
               "$ref": "#/$defs/DateAfterMatch"
@@ -748,6 +787,9 @@
               "$ref": "#/$defs/StrOneOfMatch"
             },
             {
+              "$ref": "#/$defs/StrRegexMatch"
+            },
+            {
               "$ref": "#/$defs/DateAfterMatch"
             },
             {
@@ -788,6 +830,9 @@
             },
             {
               "$ref": "#/$defs/StrOneOfMatch"
+            },
+            {
+              "$ref": "#/$defs/StrRegexMatch"
             },
             {
               "$ref": "#/$defs/DateAfterMatch"
@@ -832,6 +877,9 @@
               "$ref": "#/$defs/StrOneOfMatch"
             },
             {
+              "$ref": "#/$defs/StrRegexMatch"
+            },
+            {
               "$ref": "#/$defs/DateAfterMatch"
             },
             {
@@ -872,6 +920,9 @@
             },
             {
               "$ref": "#/$defs/StrOneOfMatch"
+            },
+            {
+              "$ref": "#/$defs/StrRegexMatch"
             },
             {
               "$ref": "#/$defs/DateAfterMatch"
@@ -916,6 +967,9 @@
               "$ref": "#/$defs/StrOneOfMatch"
             },
             {
+              "$ref": "#/$defs/StrRegexMatch"
+            },
+            {
               "$ref": "#/$defs/DateAfterMatch"
             },
             {
@@ -956,6 +1010,9 @@
             },
             {
               "$ref": "#/$defs/StrOneOfMatch"
+            },
+            {
+              "$ref": "#/$defs/StrRegexMatch"
             },
             {
               "$ref": "#/$defs/DateAfterMatch"
@@ -1000,6 +1057,9 @@
               "$ref": "#/$defs/StrOneOfMatch"
             },
             {
+              "$ref": "#/$defs/StrRegexMatch"
+            },
+            {
               "$ref": "#/$defs/DateAfterMatch"
             },
             {
@@ -1040,6 +1100,9 @@
             },
             {
               "$ref": "#/$defs/StrOneOfMatch"
+            },
+            {
+              "$ref": "#/$defs/StrRegexMatch"
             },
             {
               "$ref": "#/$defs/DateAfterMatch"
@@ -1084,6 +1147,9 @@
               "$ref": "#/$defs/StrOneOfMatch"
             },
             {
+              "$ref": "#/$defs/StrRegexMatch"
+            },
+            {
               "$ref": "#/$defs/DateAfterMatch"
             },
             {
@@ -1124,6 +1190,9 @@
             },
             {
               "$ref": "#/$defs/StrOneOfMatch"
+            },
+            {
+              "$ref": "#/$defs/StrRegexMatch"
             },
             {
               "$ref": "#/$defs/DateAfterMatch"
@@ -1168,6 +1237,9 @@
               "$ref": "#/$defs/StrOneOfMatch"
             },
             {
+              "$ref": "#/$defs/StrRegexMatch"
+            },
+            {
               "$ref": "#/$defs/DateAfterMatch"
             },
             {
@@ -1208,6 +1280,9 @@
             },
             {
               "$ref": "#/$defs/StrOneOfMatch"
+            },
+            {
+              "$ref": "#/$defs/StrRegexMatch"
             },
             {
               "$ref": "#/$defs/DateAfterMatch"
@@ -1252,6 +1327,9 @@
               "$ref": "#/$defs/StrOneOfMatch"
             },
             {
+              "$ref": "#/$defs/StrRegexMatch"
+            },
+            {
               "$ref": "#/$defs/DateAfterMatch"
             },
             {
@@ -1292,6 +1370,9 @@
             },
             {
               "$ref": "#/$defs/StrOneOfMatch"
+            },
+            {
+              "$ref": "#/$defs/StrRegexMatch"
             },
             {
               "$ref": "#/$defs/DateAfterMatch"
@@ -1336,6 +1417,9 @@
               "$ref": "#/$defs/StrOneOfMatch"
             },
             {
+              "$ref": "#/$defs/StrRegexMatch"
+            },
+            {
               "$ref": "#/$defs/DateAfterMatch"
             },
             {
@@ -1376,6 +1460,9 @@
             },
             {
               "$ref": "#/$defs/StrOneOfMatch"
+            },
+            {
+              "$ref": "#/$defs/StrRegexMatch"
             },
             {
               "$ref": "#/$defs/DateAfterMatch"
@@ -1420,6 +1507,9 @@
               "$ref": "#/$defs/StrOneOfMatch"
             },
             {
+              "$ref": "#/$defs/StrRegexMatch"
+            },
+            {
               "$ref": "#/$defs/DateAfterMatch"
             },
             {
@@ -1446,7 +1536,7 @@
       "type": "object"
     },
     "StrContainsMatch": {
-      "description": "To match values containing a string, one can do this:\n\n```YAML\nimports:\n- match:\n    desc:\n    contains: \"DoorDash\"\n```",
+      "description": "To match values containing a string, one can do this:\n\n```YAML\nimports:\n- match:\n    desc:\n      contains: \"DoorDash\"\n```",
       "properties": {
         "contains": {
           "title": "Contains",
@@ -1460,7 +1550,7 @@
       "type": "object"
     },
     "StrExactMatch": {
-      "description": "To match an exact value, one can do this:\n\n```YAML\nimports:\n- match:\n    desc:\n    equals: \"DoorDash\"\n```",
+      "description": "To match an exact value, one can do this:\n\n```YAML\nimports:\n- match:\n    desc:\n      equals: \"DoorDash\"\n```",
       "properties": {
         "equals": {
           "title": "Equals",
@@ -1474,7 +1564,7 @@
       "type": "object"
     },
     "StrOneOfMatch": {
-      "description": "To match values belonging to a list of values, one can do this:\n\n```YAML\nimports:\n- match:\n    desc:\n    one_of:\n        - DoorDash\n        - UberEats\n        - Postmate\n```",
+      "description": "To match values belonging to a list of values, one can do this:\n\n```YAML\nimports:\n- match:\n    desc:\n      one_of:\n        - DoorDash\n        - UberEats\n        - Postmate\n```",
       "properties": {
         "one_of": {
           "items": {
@@ -1491,7 +1581,7 @@
       "type": "object"
     },
     "StrPrefixMatch": {
-      "description": "To match values with a prefix, one can do this:\n\n```YAML\nimports:\n- match:\n    desc:\n    prefix: \"DoorDash\"\n```",
+      "description": "To match values with a prefix, one can do this:\n\n```YAML\nimports:\n- match:\n    desc:\n      prefix: \"DoorDash\"\n```",
       "properties": {
         "prefix": {
           "title": "Prefix",
@@ -1505,7 +1595,7 @@
       "type": "object"
     },
     "StrRegexMatch": {
-      "description": "When a simple string value is provided, regular expression matching will be used. Here's an example:\n\n```YAML\nimports:\n- match:\n    desc: \"^DoorDash (.+)\"\n```",
+      "description": "When a simple string value is provided, regular expression matching will be used. Here's an example:\n\n```YAML\nimports:\n- match:\n    desc: \"^DoorDash (.+)\"\n```\nor\n```YAML\nimports:\n- match:\n    desc:\n      regex: \"^DoorDash (.+)\"\n```",
       "properties": {
         "regex": {
           "title": "Regex",
@@ -1519,7 +1609,7 @@
       "type": "object"
     },
     "StrSuffixMatch": {
-      "description": "To match values with a suffix, one can do this:\n\n```YAML\nimports:\n- match:\n    desc:\n    suffix: \"DoorDash\"\n```",
+      "description": "To match values with a suffix, one can do this:\n\n```YAML\nimports:\n- match:\n    desc:\n      suffix: \"DoorDash\"\n```",
       "properties": {
         "suffix": {
           "title": "Suffix",
@@ -1533,7 +1623,7 @@
       "type": "object"
     },
     "TransactionTemplate": {
-      "description": "A transaction transform template.\n\nUsed to transform the raw transaction into a beancount transaction.\n\n\n```yaml\ntxn:\n    date: \"2021-01-01\"\n    flag: \"*\"\n    narration: \"Simple Transaction\"\n    metadata:\n        - name: \"icon\"\n          value: \"\ud83c\udf54\"\n    postings:\n        - account: \"Expenses:Simple\"\n          amount:\n              number: \"{{ amount }}\"\n              currency: \"USD\"\n```\n\nresults in the following beancount transaction:\n\n```beancount\n2021-01-01 * \"Simple Transaction\"\n    icon: \ud83c\udf54\n    Expenses:Simple                            100 USD\n```",
+      "description": "A transaction transform template.\n\nUsed to transform the raw transaction into a beancount transaction.\n\n\n```yaml\ntxn:\n    date: \"2021-01-01\"\n    flag: \"*\"\n    narration: \"Simple Transaction\"\n    metadata:\n        - name: \"icon\"\n          value: \"\ud83c\udf54\"\n    postings:\n        - account: \"Expenses:Simple\"\n          amount:\n              number: \"{{ amount }}\"\n              currency: \"USD\"\n```\n\nresults in the following beancount transaction:\n\n```ledger\n2021-01-01 * \"Simple Transaction\"\n    icon: \ud83c\udf54\n    Expenses:Simple                            100 USD\n```",
       "properties": {
         "id": {
           "anyOf": [
@@ -1698,7 +1788,7 @@
       "type": "object"
     }
   },
-  "description": "The import configuration file for beancount-importer-rules.\n\nExamples\n\n        # yaml-language-server: $schema=https://raw.githubusercontent.com/zenobi-us/beancount-importer-rules/master/schema.json\n\n        inputs:\n        - match: \"data/*.csv\"\n            config:\n            extractor:\n                import_path: \"beancount_importer_rules.extractor:YourExtractorClass\"\n                name: \"custom name for this extractor instance\"\n                date_format: \"%Y-%m-%d\"\n                datetime_format: \"%Y-%m-%d %H:%M:%S\"\n            default_file: \"books/{{ date.year }}.bean\"\n            prepend_postings:\n                - account: \"Assets:Bank\"\n\n        imports:\n        - name: \"simple\"\n            match:\n            desc: \"Simple Transaction\"\n            actions:\n            - type: \"add_txn\"\n                txn:\n                date: \"2021-01-01\"\n                flag: \"*\"\n                narration: \"Simple Transaction\"\n                postings:\n                    - account: \"Expenses:Simple\"\n                    amount:\n                        number: \"{{ amount }}\"\n                        currency: \"USD\"\n\n    You can view the [schema](https://raw.githubusercontent.com/zenobi-us/beancount-importer-rules/master/schema.json) for more details",
+  "description": "The import configuration file for beancount-importer-rules.\n\nExamples\n\n```YAML\n# yaml-language-server: $schema=https://raw.githubusercontent.com/zenobi-us/beancount-importer-rules/master/schema.json\n\n# \ud83d\udcda pathname is relative to the workspace root\n# \ud83d\udc0d import path is relative to the workspace root\n\n\ninputs:\n- match: \"sources/*.csv\" # \ud83d\udcda\n  config:\n    extractor:\n        import_path: \"extractors.my_extractor:YourExtractorClass\" # \ud83d\udc0d\n        as_name: \"custom name for this extractor instance\"\n        date_format: \"%Y-%m-%d\"\n        datetime_format: \"%Y-%m-%d %H:%M:%S\"\n    default_file: \"books/{{ date.year }}.bean\" # \ud83d\udcda\n    prepend_postings:\n        - account: \"Assets:Bank\"\n\nimports:\n- name: \"simple\"\n    match:\n      desc: \"Simple Transaction\"\n    actions:\n    - type: \"add_txn\"\n      txn:\n        date: \"2021-01-01\"\n        flag: \"*\"\n        narration: \"Simple Transaction\"\n        postings:\n            - account: \"Expenses:Simple\"\n              amount:\n                number: \"{{ amount }}\"\n                currency: \"USD\"\n```\n\n\nYou can view the [schema](https://raw.githubusercontent.com/zenobi-us/beancount-importer-rules/master/schema.json) for more details\nor refer to the [ImportDoc][beancount_importer_rules.data_types.ImportDoc] api",
   "properties": {
     "context": {
       "anyOf": [

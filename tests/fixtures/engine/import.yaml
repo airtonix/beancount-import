@@ -8,7 +8,9 @@ inputs:
       # file tests/fixtures/integration/importer/agrimaster_csv.py
       extractor:
         import_path: tests.fixtures.importer.agrimaster:AgrimasterCsvExtractor
-
+        date_format: "DD/MM/YYYY"
+        datetime_format: "DD/MM/YYYY HH:mm:ss"
+        date_field: Date
       default_file: "books/imported/{{ date.year }}.bean"
       default_txn:
         date: "{{ date }}"
