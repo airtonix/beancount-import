@@ -594,33 +594,33 @@ class TxnMatchVars(ImportBaseModel):
     - name: PG&E Gas
         match:
         extractor:
-            equals: "plaid"
+          equals: "plaid"
         desc:
-            prefix: "PGANDE WEB ONLINE "
+          prefix: "PGANDE WEB ONLINE "
         actions:
         - txn:
             payee: "{{ payee }}"
             narration: "Paid American Express Blue Cash Everyday"
             postings:
-                - account: "Expenses:Util:Gas:PGE"
-                amount:
-                    number: "{{ -amount }}"
-                    currency: "{{ currency | default('USD', true) }}"
+            - account: "Expenses:Util:Gas:PGE"
+              amount:
+                number: "{{ -amount }}"
+                currency: "{{ currency | default('USD', true) }}"
 
     - name: Comcast
-        match:
+      match:
         extractor:
-            equals: "plaid"
+          equals: "plaid"
         desc: "Comcast"
-        actions:
-        - txn:
-            payee: "{{ payee }}"
-            narration: "Comcast"
-            postings:
-                - account: "Expenses:Util:Internet:Comcast"
-                amount:
-                    number: "{{ -amount }}"
-                    currency: "{{ currency | default('USD', true) }}"
+      actions:
+      - txn:
+          payee: "{{ payee }}"
+          narration: "Comcast"
+          postings:
+          - account: "Expenses:Util:Internet:Comcast"
+            amount:
+              number: "{{ -amount }}"
+              currency: "{{ currency | default('USD', true) }}"
     ```
 
     With match and variables, you can write:
@@ -628,30 +628,30 @@ class TxnMatchVars(ImportBaseModel):
     ```yaml
     imports:
     - name: Household expenses
-        common_cond:
+      common_cond:
         extractor:
-            equals: "plaid"
-        match:
-        - cond:
-            desc:
-                prefix: "PGANDE WEB ONLINE "
-            vars:
-            account: "Expenses:Util:Gas:PGE"
-            narration: "Paid American Express Blue Cash Everyday"
-        - cond:
-            desc: "Comcast"
-            vars:
-            account: "Expenses:Housing:Util:Internet:Comcast"
-            narration: "Comcast"
-        actions:
-        - txn:
-            payee: "{{ payee }}"
-            narration: "{{ narration }}"
-            postings:
-                - account: "{{ account } "
-                amount:
-                    number: "{{ -amount }}"
-                    currency: "{{ currency | default('USD', true) }}"
+          equals: "plaid"
+      match:
+      - cond:
+          desc:
+              prefix: "PGANDE WEB ONLINE "
+          vars:
+          account: "Expenses:Util:Gas:PGE"
+          narration: "Paid American Express Blue Cash Everyday"
+      - cond:
+          desc: "Comcast"
+          vars:
+          account: "Expenses:Housing:Util:Internet:Comcast"
+          narration: "Comcast"
+      actions:
+      - txn:
+          payee: "{{ payee }}"
+          narration: "{{ narration }}"
+          postings:
+          - account: "{{ account } "
+              amount:
+                number: "{{ -amount }}"
+                currency: "{{ currency | default('USD', true) }}"
     ```
 
     The `common_cond` is the condition to meet for all the matches. Instead of a map, you define
@@ -1103,22 +1103,18 @@ class ImportDoc(ImportBaseModel):
 
     Examples
 
-    ```YAML
+    ```yaml title="import-config.yml", hl_lines="4 7 11"
     # yaml-language-server: $schema=https://raw.githubusercontent.com/zenobi-us/beancount-importer-rules/master/schema.json
 
-    # 📚 pathname is relative to the workspace root
-    # 🐍 import path is relative to the workspace root
-
-
     inputs:
-    - match: "sources/*.csv" # 📚
+    - match: "sources/*.csv" # (1)
       config:
         extractor:
-            import_path: "extractors.my_extractor:YourExtractorClass" # 🐍
+            import_path: "extractors.my_extractor:YourExtractorClass" # (2)
             as_name: "custom name for this extractor instance"
             date_format: "%Y-%m-%d"
             datetime_format: "%Y-%m-%d %H:%M:%S"
-        default_file: "books/{{ date.year }}.bean" # 📚
+        default_file: "books/{{ date.year }}.bean" # (3)
         prepend_postings:
             - account: "Assets:Bank"
 
@@ -1138,6 +1134,10 @@ class ImportDoc(ImportBaseModel):
                     number: "{{ amount }}"
                     currency: "USD"
     ```
+
+    1. pathname is relative to the workspace root
+    2. import path is relative to the workspace root
+    3. pathname is relative to the workspace root
 
 
     You can view the [schema](https://raw.githubusercontent.com/zenobi-us/beancount-importer-rules/master/schema.json) for more details
