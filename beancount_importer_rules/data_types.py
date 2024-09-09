@@ -1112,10 +1112,10 @@ class ImportDoc(ImportBaseModel):
 
     inputs:
     - match: "sources/*.csv" # 📚
-        config:
+      config:
         extractor:
             import_path: "extractors.my_extractor:YourExtractorClass" # 🐍
-            name: "custom name for this extractor instance"
+            as_name: "custom name for this extractor instance"
             date_format: "%Y-%m-%d"
             datetime_format: "%Y-%m-%d %H:%M:%S"
         default_file: "books/{{ date.year }}.bean" # 📚
@@ -1125,16 +1125,16 @@ class ImportDoc(ImportBaseModel):
     imports:
     - name: "simple"
         match:
-        desc: "Simple Transaction"
+          desc: "Simple Transaction"
         actions:
         - type: "add_txn"
-            txn:
+          txn:
             date: "2021-01-01"
             flag: "*"
             narration: "Simple Transaction"
             postings:
                 - account: "Expenses:Simple"
-                amount:
+                  amount:
                     number: "{{ amount }}"
                     currency: "USD"
     ```
