@@ -18,6 +18,7 @@ from beancount_importer_rules.data_types import (
     ExractorInputConfig,
     GeneratedPosting,
     GeneratedTransaction,
+    ImportList,
     ImportRule,
     InputConfigDetails,
     MetadataItem,
@@ -30,7 +31,7 @@ from beancount_importer_rules.data_types import (
     TxnMatchVars,
     UnprocessedTransaction,
 )
-from beancount_importer_rules.processor import (
+from beancount_importer_rules.processor.process_transaction import (
     process_transaction,
 )
 from beancount_importer_rules.processor.walk_dir import walk_dir_files
@@ -114,43 +115,45 @@ def test_walk_dir_files(
                     ),
                 ],
             ),
-            [
-                ImportRule(
-                    common_cond=SimpleTxnMatchRule(
-                        source_account=StrExactMatch(equals="Foobar")
-                    ),
-                    match=[
-                        TxnMatchVars(
-                            cond=SimpleTxnMatchRule(
-                                extractor=StrExactMatch(equals="MOCK_EXTRACTOR")
-                            ),
-                            vars=dict(foo="bar{{ 123 }}"),
-                        )
-                    ],
-                    actions=[
-                        ActionAddTxn(
-                            type=ActionType.add_txn,
-                            file="{{ extractor }}.bean",
-                            txn=TransactionTemplate(
-                                metadata=[
-                                    MetadataItemTemplate(
-                                        name="var_value", value="{{ foo }}"
-                                    )
-                                ],
-                                postings=[
-                                    PostingTemplate(
-                                        account="Assets:Bank:{{ source_account }}",
-                                        amount=AmountTemplate(
-                                            number="{{ amount }}",
-                                            currency="{{ currency }}",
+            ImportList(
+                root=[
+                    ImportRule(
+                        common_cond=SimpleTxnMatchRule(
+                            source_account=StrExactMatch(equals="Foobar")
+                        ),
+                        match=[
+                            TxnMatchVars(
+                                cond=SimpleTxnMatchRule(
+                                    extractor=StrExactMatch(equals="MOCK_EXTRACTOR")
+                                ),
+                                vars=dict(foo="bar{{ 123 }}"),
+                            )
+                        ],
+                        actions=[
+                            ActionAddTxn(
+                                type=ActionType.add_txn,
+                                file="{{ extractor }}.bean",
+                                txn=TransactionTemplate(
+                                    metadata=[
+                                        MetadataItemTemplate(
+                                            name="var_value", value="{{ foo }}"
+                                        )
+                                    ],
+                                    postings=[
+                                        PostingTemplate(
+                                            account="Assets:Bank:{{ source_account }}",
+                                            amount=AmountTemplate(
+                                                number="{{ amount }}",
+                                                currency="{{ currency }}",
+                                            ),
                                         ),
-                                    ),
-                                ],
-                            ),
-                        )
-                    ],
-                )
-            ],
+                                    ],
+                                ),
+                            )
+                        ],
+                    )
+                ]
+            ),
             [
                 GeneratedTransaction(
                     id="mock.csv:123",
@@ -226,20 +229,22 @@ def test_walk_dir_files(
                     ],
                 ),
             ),
-            [
-                ImportRule(
-                    match=SimpleTxnMatchRule(
-                        extractor=StrExactMatch(equals="MOCK_EXTRACTOR")
-                    ),
-                    actions=[
-                        ActionAddTxn(
-                            type=ActionType.add_txn,
-                            file="{{ extractor }}.bean",
-                            txn=TransactionTemplate(),
-                        )
-                    ],
-                )
-            ],
+            ImportList(
+                root=[
+                    ImportRule(
+                        match=SimpleTxnMatchRule(
+                            extractor=StrExactMatch(equals="MOCK_EXTRACTOR")
+                        ),
+                        actions=[
+                            ActionAddTxn(
+                                type=ActionType.add_txn,
+                                file="{{ extractor }}.bean",
+                                txn=TransactionTemplate(),
+                            )
+                        ],
+                    )
+                ]
+            ),
             [
                 GeneratedTransaction(
                     id="my-mock.csv:123",
@@ -283,31 +288,33 @@ def test_walk_dir_files(
                     datetime_format="YYYY-MM-DD HH:mm:ss",
                 ),
             ),
-            [
-                ImportRule(
-                    match=SimpleTxnMatchRule(
-                        extractor=StrExactMatch(equals="MOCK_EXTRACTOR")
-                    ),
-                    actions=[
-                        ActionAddTxn(
-                            type=ActionType.add_txn,
-                            file="{{ extractor }}.bean",
-                            txn=TransactionTemplate(
-                                payee="{{ omit }}",
-                                postings=[
-                                    PostingTemplate(
-                                        account="Assets:Bank:Foobar",
-                                        amount=AmountTemplate(
-                                            number="{{ amount }}",
-                                            currency="{{ currency }}",
+            ImportList(
+                root=[
+                    ImportRule(
+                        match=SimpleTxnMatchRule(
+                            extractor=StrExactMatch(equals="MOCK_EXTRACTOR")
+                        ),
+                        actions=[
+                            ActionAddTxn(
+                                type=ActionType.add_txn,
+                                file="{{ extractor }}.bean",
+                                txn=TransactionTemplate(
+                                    payee="{{ omit }}",
+                                    postings=[
+                                        PostingTemplate(
+                                            account="Assets:Bank:Foobar",
+                                            amount=AmountTemplate(
+                                                number="{{ amount }}",
+                                                currency="{{ currency }}",
+                                            ),
                                         ),
-                                    ),
-                                ],
-                            ),
-                        )
-                    ],
-                )
-            ],
+                                    ],
+                                ),
+                            )
+                        ],
+                    )
+                ]
+            ),
             [
                 GeneratedTransaction(
                     id="mock.csv:123",
@@ -369,14 +376,16 @@ def test_walk_dir_files(
                     ),
                 ],
             ),
-            [
-                ImportRule(
-                    match=SimpleTxnMatchRule(
-                        extractor=StrExactMatch(equals="OTHER_MOCK_EXTRACTOR")
-                    ),
-                    actions=[],
-                )
-            ],
+            ImportList(
+                root=[
+                    ImportRule(
+                        match=SimpleTxnMatchRule(
+                            extractor=StrExactMatch(equals="OTHER_MOCK_EXTRACTOR")
+                        ),
+                        actions=[],
+                    )
+                ]
+            ),
             [],
             UnprocessedTransaction(
                 txn=Transaction(
@@ -428,21 +437,23 @@ def test_walk_dir_files(
                     datetime_format="YYYY-MM-DD HH:mm:ss",
                 ),
             ),
-            [
-                ImportRule(
-                    match=SimpleTxnMatchRule(
-                        extractor=StrExactMatch(equals="MOCK_EXTRACTOR")
-                    ),
-                    actions=[
-                        ActionDelTxn(
-                            type=ActionType.del_txn,
-                            txn=DeleteTransactionTemplate(
-                                id="id-{{ file }}:{{ lineno }}"
-                            ),
-                        )
-                    ],
-                )
-            ],
+            ImportList(
+                root=[
+                    ImportRule(
+                        match=SimpleTxnMatchRule(
+                            extractor=StrExactMatch(equals="MOCK_EXTRACTOR")
+                        ),
+                        actions=[
+                            ActionDelTxn(
+                                type=ActionType.del_txn,
+                                txn=DeleteTransactionTemplate(
+                                    id="id-{{ file }}:{{ lineno }}"
+                                ),
+                            )
+                        ],
+                    )
+                ]
+            ),
             [
                 DeletedTransaction(id="id-mock.csv:123"),
             ],
@@ -468,18 +479,20 @@ def test_walk_dir_files(
                     datetime_format="YYYY-MM-DD HH:mm:ss",
                 ),
             ),
-            [
-                ImportRule(
-                    match=SimpleTxnMatchRule(
-                        extractor=StrExactMatch(equals="MOCK_EXTRACTOR")
-                    ),
-                    actions=[
-                        ActionIgnore(
-                            type=ActionType.ignore,
-                        )
-                    ],
-                )
-            ],
+            ImportList(
+                root=[
+                    ImportRule(
+                        match=SimpleTxnMatchRule(
+                            extractor=StrExactMatch(equals="MOCK_EXTRACTOR")
+                        ),
+                        actions=[
+                            ActionIgnore(
+                                type=ActionType.ignore,
+                            )
+                        ],
+                    )
+                ]
+            ),
             [],
             None,
             id="ignore",
@@ -489,7 +502,7 @@ def test_walk_dir_files(
 def test_process_transaction(
     template_env: SandboxedEnvironment,
     input_config: InputConfigDetails,
-    import_rules: list[ImportRule],
+    import_rules: ImportList,
     txn: Transaction,
     expected: list[GeneratedTransaction],
     expected_result: UnprocessedTransaction | None,
@@ -556,28 +569,32 @@ def test_process_transaction_generic(template_env: SandboxedEnvironment):
             ),
         ],
     )
-    import_rules = [
-        ImportRule(
-            match=SimpleTxnMatchRule(extractor=StrExactMatch(equals="MOCK_EXTRACTOR")),
-            actions=[
-                ActionAddTxn(
-                    type=ActionType.add_txn,
-                    file="{{ extractor }}.bean",
-                    txn=TransactionTemplate(
-                        postings=[
-                            PostingTemplate(
-                                account="Assets:Bank:{{ source_account }}",
-                                amount=AmountTemplate(
-                                    number="{{ amount }}",
-                                    currency="{{ currency }}",
+    import_rules = ImportList(
+        root=[
+            ImportRule(
+                match=SimpleTxnMatchRule(
+                    extractor=StrExactMatch(equals="MOCK_EXTRACTOR")
+                ),
+                actions=[
+                    ActionAddTxn(
+                        type=ActionType.add_txn,
+                        file="{{ extractor }}.bean",
+                        txn=TransactionTemplate(
+                            postings=[
+                                PostingTemplate(
+                                    account="Assets:Bank:{{ source_account }}",
+                                    amount=AmountTemplate(
+                                        number="{{ amount }}",
+                                        currency="{{ currency }}",
+                                    ),
                                 ),
-                            ),
-                        ]
-                    ),
-                )
-            ],
-        )
-    ]
+                            ]
+                        ),
+                    )
+                ],
+            )
+        ]
+    )
     expected = [
         GeneratedTransaction(
             id="mock.csv:123",

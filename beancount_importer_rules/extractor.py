@@ -148,13 +148,13 @@ class ExtractorBase:
     def get_import_id_template(self) -> str:
         return DEFAULT_IMPORT_ID_TEMPLATE
 
-    def detect(self, file_contents: typing.TextIO) -> bool:
+    def detect(self, file_path: pathlib.Path) -> bool:
         raise NotImplementedError()
 
-    def fingerprint(self, file_contents: typing.TextIO) -> Fingerprint | None:
+    def fingerprint(self, file_path: pathlib.Path) -> Fingerprint | None:
         raise NotImplementedError()
 
-    def parse_date(self, date_str: str) -> datetime.datetime:
+    def parse_date(self, date_str: str) -> datetime.date:
         raise NotImplementedError()
 
     def parse_datetime(self, date_str: str) -> datetime.datetime:
@@ -193,11 +193,11 @@ class ExtractorCsvBase(ExtractorBase):
     delimiter: str = ","
     """The delimiter used in the CSV file"""
 
-    def parse_date(self, date_str: str) -> datetime.datetime:
+    def parse_date(self, date_str: str) -> datetime.date:
         """
         Parse a date string using the self.format
         """
-        return arrow.get(date_str, self.date_format).datetime
+        return arrow.get(date_str, self.date_format).date()
 
     def parse_datetime(self, date_str: str) -> datetime.datetime:
         """
@@ -205,47 +205,40 @@ class ExtractorCsvBase(ExtractorBase):
         """
         return arrow.get(date_str, self.datetime_format).datetime
 
-    def get_linecount(self, file_contents: typing.TextIO) -> int:
+    def get_linecount(self, file_path: pathlib.Path) -> int:
         """
         Get the number of lines in a file
         """
-        file_contents.seek(0, os.SEEK_SET)  # noqa: F821
+        return sum(1 for i in open(file_path, "rb"))
 
-        reader = csv.DictReader(file_contents)
-        count = sum(1 for _ in reader)
-        file_contents.seek(0, os.SEEK_SET)  # noqa: F821
-
-        return count
-
-    def fingerprint(
-        self, file_contents: typing.TextIO, date_field: str = "Date"
-    ) -> Fingerprint | None:
+    def fingerprint(self, file_path: pathlib.Path) -> Fingerprint | None:
         """
         Generate a fingerprint for the CSV file
         """
-        file_contents.seek(0, os.SEEK_SET)  # noqa: F821
+        with open(file_path, "r") as file_contents:
+            file_contents.seek(0, os.SEEK_SET)  # noqa: F821
 
-        reader = csv.DictReader(file_contents)
-        if reader.fieldnames is None:
-            return
+            reader = csv.DictReader(file_contents)
+            if reader.fieldnames is None:
+                return
 
-        row = None
-        for row in reader:
-            pass
+            row = None
+            for row in reader:
+                pass
 
-        if row is None:
-            return
+            if row is None:
+                return
 
-        hash = hashlib.sha256()
-        for field in reader.fieldnames:
-            hash.update(row[field].encode("utf8"))
+            hash = hashlib.sha256()
+            for field in reader.fieldnames:
+                hash.update(row[field].encode("utf8"))
 
-        return Fingerprint(
-            starting_date=self.parse_date(row[date_field]),
-            first_row_hash=hash.hexdigest(),
-        )
+            return Fingerprint(
+                starting_date=self.parse_date(row[self.date_field]),
+                first_row_hash=hash.hexdigest(),
+            )
 
-    def detect(self, file_contents: typing.TextIO) -> bool:
+    def detect(self, file_path: pathlib.Path) -> bool:
         """
         Check if the input file is a CSV file with the expected
         fields. Should this extractor be used to process the file?
@@ -256,14 +249,15 @@ class ExtractorCsvBase(ExtractorBase):
                 klass_name=self.__class__.__name__,
             )
 
-        file_contents.seek(0, os.SEEK_SET)  # noqa: F821
-        reader = csv.DictReader(file_contents)
-        try:
-            return reader.fieldnames == self.fields
-        except Exception:
-            return False
+        with open(file_path, "r") as file_contents:
+            file_contents.seek(0, os.SEEK_SET)  # noqa: F821
+            reader = csv.DictReader(file_contents)
+            try:
+                return reader.fieldnames == self.fields
+            except Exception:
+                return False
 
-    def detect_has_header(self, file_contents: typing.TextIO) -> bool:
+    def detect_has_header(self, file_path: pathlib.Path) -> bool:
         """
         Check if the supplied csv file has a header row.
 
@@ -281,15 +275,16 @@ class ExtractorCsvBase(ExtractorBase):
                 klass_name=self.__class__.__name__,
             )
 
-        file_contents.seek(0, os.SEEK_SET)  # noqa: F821
-        reader = csv.DictReader(file_contents)
-        file_contents.seek(0, os.SEEK_SET)  # noqa: F821
+        with open(file_path, "r") as file_contents:
+            file_contents.seek(0, os.SEEK_SET)  # noqa: F821
+            reader = csv.DictReader(file_contents)
+            file_contents.seek(0, os.SEEK_SET)  # noqa: F821
 
-        try:
-            outcome = reader.fieldnames == self.fields
-            return outcome
-        except Exception:
-            return False
+            try:
+                outcome = reader.fieldnames == self.fields
+                return outcome
+            except Exception:
+                return False
 
     def process_line(
         self, lineno: int, line: dict, file_path: pathlib.Path, line_count: int
@@ -310,13 +305,18 @@ class ExtractorCsvBase(ExtractorBase):
         Loops over the rows in the CSV file and yields a transaction for each row by calling
         [`process_line`](beancount_importer_rules.extractor.ExtractorCsvBase.process_line).
         """
+        has_header = self.detect_has_header(file_path)
+        line_count = self.get_linecount(file_path)
+
         with open(file_path, "r") as file_contents:
-            start_row = self.detect_has_header(file_contents) and 1 or 0
-            line_count = self.get_linecount(file_contents)
+            if has_header:
+                reader = csv.DictReader(file_contents, delimiter=self.delimiter)
+            else:
+                reader = csv.DictReader(
+                    file_contents, fieldnames=self.fields, delimiter=self.delimiter
+                )
 
-            reader = csv.DictReader(file_contents, delimiter=self.delimiter)
-
-            for lineno, line in enumerate(reader, start=start_row):
+            for lineno, line in enumerate(reader, start=has_header and 1 or 0):
                 txn = self.process_line(
                     lineno=lineno, line=line, file_path=file_path, line_count=line_count
                 )

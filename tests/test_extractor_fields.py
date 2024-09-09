@@ -9,6 +9,8 @@ from tests.conftest import FIXTURE_FOLDER
 
 class BasicExtractor(ExtractorCsvBase):
     name: str = "basic"
+    date_field: str = "Date"
+    date_format: str = "YYYY-MM-DD"
     fields: typing.List[str] = [
         "Account",
         "Date",
@@ -46,11 +48,13 @@ def test_withheader():
     workdir = FIXTURE_FOLDER / "extractor"
 
     extractor = BasicExtractor()
-    extractor.process(workdir / "with_header.csv")
+    txns = list(extractor.process(workdir / "with_header.csv"))
+    assert len(txns) == 1
 
 
 def test_withoutheader():
     workdir = FIXTURE_FOLDER / "extractor"
 
     extractor = BasicExtractor()
-    extractor.process(workdir / "with_header.csv")
+    txns = list(extractor.process(workdir / "without_header.csv"))
+    assert len(txns) == 1

@@ -61,3 +61,11 @@
   import-src: "imports/agrimaster.csv"
   Expenses:Unknown
   Assets:Bank                                                150.00 AUD
+
+2023-01-10 * "Transfer to savings"
+  import-id: "imports/agrimaster.csv:-11"
+  import-src: "imports/agrimaster.csv"
+  with_regex: "True"
+  count: "1"
+  Assets:Bank
+  Equity:Transfers                                           500.00 AUD

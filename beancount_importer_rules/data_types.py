@@ -25,9 +25,9 @@ class Transaction:
     # the unique id of the transaction
     transaction_id: str | None = None
     # date of the transaction
-    date: datetime.datetime | None = None
+    date: datetime.date | None = None
     # date when the transaction posted
-    post_date: datetime.datetime | None = None
+    post_date: datetime.date | None = None
     # timestamp of the transaction
     timestamp: datetime.datetime | None = None
     # timezone of the transaction, needs to be one of timezone value supported by pytz
