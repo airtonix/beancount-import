@@ -90,7 +90,7 @@ jobs:
         uses: ./.github/actions/setup-dependencies
 
       - name: Rc Version
-        id: compute_rc_version
+        id: get_release_version
         run: |
           .github/cmds/get_release_version.sh \
             $(echo "${{ toJSON(needs.Process.outputs) }}" | yq -o=json -I=0 .) \
@@ -98,7 +98,7 @@ jobs:
 
       - name: Preflight
         run: |
-          pdm version ${{ steps.compute_rc_version.outputs.Version }}
+          pdm version ${{ steps.get_release_version.outputs.Version }}
           just build || true
 
       - name: Publish
@@ -108,5 +108,5 @@ jobs:
           echo 'Release PR Merged.'
           just publish pypi
           just docs-deploy \
-            ${{ steps.compute_rc_version.outputs.Version }} \
-            ${{ steps.compute_rc_version.outputs.Track }}
+            ${{ steps.get_release_version.outputs.Version }} \
+            ${{ steps.get_release_version.outputs.Track }}
