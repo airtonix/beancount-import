@@ -96,9 +96,13 @@ jobs:
         id: compute_rc_version
         run: |
           if "${{ needs.Process.outputs.prs_created }}" == "true"; then
-            commits_since_last_tag=$(git log $(git describe --tags --abbrev=0)..HEAD --oneline | wc -l)
-            last_tag=$(git describe --tags --abbrev=0 | sed 's/v//')
-            echo "Version=$last_tag.$commits_since_last_tag" >> $GITHUB_OUTPUT
+            last_tag=$(git describe --tags --abbrev=0)
+            hash=$(git rev-parse --short HEAD)
+            commits_since_last_tag=$(git log "${last_tag}..HEAD" --oneline | wc -l)
+            # https://packaging.python.org/en/latest/discussions/versioning/#local-version-identifiers
+            # https://discuss.python.org/t/pip-pre-and-beta-dev-versions/9665
+            # https://stackoverflow.com/a/24293364/454615
+            echo "Version=${last_tag#v}.dev${commits_since_last_tag}+${hash}" >> $GITHUB_OUTPUT
             echo "Track=dev" >> $GITHUB_OUTPUT
           if
 
