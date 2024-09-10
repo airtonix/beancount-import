@@ -31,10 +31,7 @@ jobs:
       - name: Print Release Data
         run: |
           echo 'Release Data:'
-
-          echo '''
-            ${{ toJSON(steps.release-please.outputs) }}
-          '''
+          echo "${{ toJSON(steps.release-please.outputs) }}" | yq -P .
 
   QA:
     needs: Process
@@ -96,7 +93,7 @@ jobs:
         id: get_release_version
         run: |
           .github/cmds/get_release_version.sh \
-            "${{ toJSON(needs.Process.outputs) }}" \
+            $(echo "${{ toJSON(needs.Process.outputs) }}" | yq -o=json -I=0 .) \
             "$GITHUB_OUTPUT"
 
       - name: Preflight
