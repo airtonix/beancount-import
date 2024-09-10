@@ -36,7 +36,11 @@ lint:
 test:
     echo "Testing files..."
 
+    # Run python tests
     pdm run pytest --verbosity=0
+
+    # find all .bats files in the repo and run them
+    find . -type f -name "*.bats" -exec bats {} \;
 
     @echo ""
     @echo "👍 Done"
