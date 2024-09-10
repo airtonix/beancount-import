@@ -26,10 +26,9 @@ debug() {
     output_track=$(echo "$output" | grep '^Track=' | cut -d= -f2)
     debug "output_track: $output_track"
 
-    expected_hash=$(git rev-parse --short HEAD)
     expected_git_tag=$(git describe --tags --abbrev=0)
     expected_commits=$(git rev-list --count "${expected_git_tag}..HEAD")
-    expected_version="${expected_git_tag#v}.dev${expected_commits}+${expected_hash}"
+    expected_version="${expected_git_tag#v}.dev${expected_commits}"
 
     debug "expected_version: $expected_version"
     # test with grep that the output contains the expected version
