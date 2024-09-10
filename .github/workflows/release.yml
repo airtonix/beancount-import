@@ -95,21 +95,9 @@ jobs:
       - name: Rc Version
         id: compute_rc_version
         run: |
-          if "${{ needs.Process.outputs.prs_created }}" == "true"; then
-            last_tag=$(git describe --tags --abbrev=0)
-            hash=$(git rev-parse --short HEAD)
-            commits_since_last_tag=$(git log "${last_tag}..HEAD" --oneline | wc -l)
-            # https://packaging.python.org/en/latest/discussions/versioning/#local-version-identifiers
-            # https://discuss.python.org/t/pip-pre-and-beta-dev-versions/9665
-            # https://stackoverflow.com/a/24293364/454615
-            echo "Version=${last_tag#v}.dev${commits_since_last_tag}+${hash}" >> $GITHUB_OUTPUT
-            echo "Track=dev" >> $GITHUB_OUTPUT
-          if
-
-          if "${{ needs.Process.outputs.releases_created }}" == "true"; then
-            echo "Version=${{ needs.Process.outputs.release_version }}" >> $GITHUB_OUTPUT
-            echo "Track=latest" >> $GITHUB_OUTPUT
-          fi
+          .github/cmds/compute_rc_version.sh \
+            "${{ toJSON(needs.Process.outputs) }}" \
+            "$GITHUB_OUTPUT"
 
       - name: Preflight
         run: |
