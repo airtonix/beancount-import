@@ -31,7 +31,9 @@ jobs:
       - name: Print Release Data
         run: |
           echo 'Release Data:'
-          echo "${{ toJSON(steps.release-please.outputs) }}" | yq -P .
+          echo '''
+            ${{ toJSON(steps.release-please.outputs) }}
+          '''
 
   QA:
     needs: Process
