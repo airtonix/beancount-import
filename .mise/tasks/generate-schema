@@ -1,0 +1,22 @@
+#!/usr/bin/env python3
+# code: language=python
+# mise description="Generate JSON schema for models"
+# mise alias="schema"
+# mise sources=["beancount_importer_rules/data_types.py"]
+# mise outputs=["schema.json", "schema-import.json"]
+
+import json
+import sys
+import pathlib
+
+sys.path.append(str(pathlib.Path(__file__).resolve().parents[2]))
+
+from beancount_importer_rules.data_types import ImportDoc, ImportList
+
+output_file_name = "schema.json"
+listoutput_file_name = "schema-import.json"
+with open(output_file_name, "w") as f:
+    f.write(json.dumps(ImportDoc.model_json_schema(), indent=2))
+
+with open(listoutput_file_name, "w") as f:
+    f.write(json.dumps(ImportList.model_json_schema(), indent=2))

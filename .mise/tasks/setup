@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# mise description="Setup the project"
+
+# Sets up the project
+#
+# Using [mise](https://mise.jdx.dev) to install dependencies and set up the project
+# for development.
+#
+
+echo ""
+echo "🍜 Setting up project"
+echo ""
+
+mise install
+pdm install
+pdm run pre-commit install
+
+echo ""
+echo "👍 Done"
+echo ""

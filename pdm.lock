@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:8513e8c59e331795d5033391c2593f840c48cfb0e9e1abcd1c9c724c7540b5c4"
+content_hash = "sha256:efe1a9dee23f549b7044274e38d456f376d26a572ad3ce459436994909d6142f"
 
 [[metadata.targets]]
 requires_python = ">=3.12"
@@ -445,6 +445,20 @@ dependencies = [
 files = [
     {file = "dep_logic-0.4.5-py3-none-any.whl", hash = "sha256:8c7c4310413fe88129216865e20a5c656b4dc8c72b118dbdcda04565d5b00dde"},
     {file = "dep_logic-0.4.5.tar.gz", hash = "sha256:e6e831bb0eb10b200864c482ad6a1c7f08f5c15cdb5909c4dfb8186976368a78"},
+]
+
+[[package]]
+name = "detect-secrets"
+version = "1.5.0"
+summary = "Tool for detecting secrets in the codebase"
+groups = ["dev"]
+dependencies = [
+    "pyyaml",
+    "requests",
+]
+files = [
+    {file = "detect_secrets-1.5.0-py3-none-any.whl", hash = "sha256:e24e7b9b5a35048c313e983f76c4bd09dad89f045ff059e354f9943bf45aa060"},
+    {file = "detect_secrets-1.5.0.tar.gz", hash = "sha256:6bb46dcc553c10df51475641bb30fd69d25645cc12339e46c824c1e0c388898a"},
 ]
 
 [[package]]
@@ -2568,6 +2582,31 @@ groups = ["dev"]
 files = [
     {file = "webencodings-0.5.1-py2.py3-none-any.whl", hash = "sha256:a0af1213f3c2226497a97e2b3aa01a7e4bee4f403f95be16fc9acd2947514a78"},
     {file = "webencodings-0.5.1.tar.gz", hash = "sha256:b36a1c245f2d304965eb4e0a82848379241dc04b865afcc4aab16748587e1923"},
+]
+
+[[package]]
+name = "xmltodict"
+version = "0.12.0"
+requires_python = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+summary = "Makes working with XML feel like you are working with JSON"
+groups = ["dev"]
+files = [
+    {file = "xmltodict-0.12.0-py2.py3-none-any.whl", hash = "sha256:8bbcb45cc982f48b2ca8fe7e7827c5d792f217ecf1792626f808bf41c3b86051"},
+    {file = "xmltodict-0.12.0.tar.gz", hash = "sha256:50d8c638ed7ecb88d90561beedbf720c9b4e851a9fa6c47ebd64e99d166d8a21"},
+]
+
+[[package]]
+name = "xmltojson"
+version = "2.0.2"
+requires_python = ">=3.7,<4.0"
+summary = "A Python module and cli tool to quickly convert xml text or files into json"
+groups = ["dev"]
+dependencies = [
+    "xmltodict<0.13.0,>=0.12.0",
+]
+files = [
+    {file = "xmltojson-2.0.2-py3-none-any.whl", hash = "sha256:8ba5c8b33a5a0f824ad754ed62367d841ce91f7deaf82e118c28e42a0e24454c"},
+    {file = "xmltojson-2.0.2.tar.gz", hash = "sha256:10719660409bd1825507e04d2fa4848c10591a092613bcd66651c7e0774f5405"},
 ]
 
 [[package]]

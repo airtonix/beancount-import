@@ -25,20 +25,23 @@ jobs:
           install: true # [default: true] run `mise install`
           cache: true # [default: true] cache mise using GitHub's cache
           log_level: debug # [default: info] log level
+          experimental: true
 
       - name: Install Python Packages
         uses: ./.github/actions/setup-dependencies
 
       - name: lint
-        run: just lint
+        run: |
+          mise run test:lint
+          mise run test:types
 
       - name: Run tests
-        env:
-          REPORT_OUTPUT: md_report.md
         shell: bash
         run: |
-          just citest "${REPORT_OUTPUT}"
-          echo "REPORT_FILE=${REPORT_OUTPUT}" >> "$GITHUB_ENV"
+          mise run test:unit md_report.md
+          echo "REPORT_FILE=md_report.md" >> "$GITHUB_ENV"
+
+          mise run test:integration
 
       - name: Output reports to the job summary when tests fail
         if: failure()
@@ -52,8 +55,18 @@ jobs:
             echo "</details>" >> $GITHUB_STEP_SUMMARY
           fi
 
-      - name: build
-        run: just build
+      - name: Compute Version
+        id: preview-version
+        run: |
+          mise run compute-release-version \
+            '{"prs_created": false, "is_pr_release": true, "releases_created": false, "release_version": null}' \
+            "$GITHUB_OUTPUT"
+
+      - name: Test Build and Publish
+        run: |
+          pdm version ${{ steps.preview-version.outputs.release_version }}
+          # test build and publishing to testpypi
+          mise run publish testpypi
 
       - name: docs
-        run: just docs
+        run: mise run docs:build

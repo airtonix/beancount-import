@@ -178,15 +178,15 @@ def test_process_imports(
     processed = []
 
     for fingerprint, manager in extractor_hash.items():
-        imported = process_imports(
-            fingerprint=fingerprint,
-            manager=manager,
-            context=doc.context,
-            imports=doc.imports,
-            input_dir=folder_path,
+        imported = list(
+            process_imports(
+                fingerprint=fingerprint,
+                manager=manager,
+                context=doc.context,
+                imports=doc.imports,
+                input_dir=folder_path,
+            )
         )
         processed.extend(imported)
 
-    result = list(processed)
-
-    assert len(result) == len(expected)
+    assert len(processed) == len(expected)

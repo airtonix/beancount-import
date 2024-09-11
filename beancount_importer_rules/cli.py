@@ -1,13 +1,8 @@
-import json
 import os
 import pathlib
 
 import click
 
-from beancount_importer_rules.data_types import (
-    ImportDoc,
-    ImportList,
-)
 from beancount_importer_rules.engine import ImportRuleEngine
 from beancount_importer_rules.environment import (
     LOG_LEVEL_MAP,
@@ -129,24 +124,3 @@ def import_cmd(
     )
 
     engine.run()
-
-
-@cli.command(name="schema")
-def schema_cmd():
-    """
-    Generate JSON schema for the ImportDoc and ImportList data types.
-    """
-
-    output_file_name = "schema.json"
-    listoutput_file_name = "schema-import.json"
-    with open(output_file_name, "w") as f:
-        main_model_schema = ImportDoc.model_json_schema()
-        f.write(json.dumps(main_model_schema, indent=2))
-
-    with open(listoutput_file_name, "w") as f:
-        list_model_schema = ImportList.model_json_schema()
-        f.write(json.dumps(list_model_schema, indent=2))
-
-
-if __name__ == "__main__":
-    cli()

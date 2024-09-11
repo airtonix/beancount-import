@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# mise description="Build the documentation"
+# mise sources=["mkdocs.yml", "docs/**/*.md", "beancount_importer_rules/**/*.py"]
+
+echo ""
+echo "🍜 Deploying documentation [LATEST]"
+echo ""
+
+VERSION="${1}"
+ALIAS="${2:-latest}"
+
+pdm run mike deploy \
+    --push \
+    --update-aliases \
+    --allow-empty \
+    "${VERSION}" \
+    "${ALIAS}"
+
+pdm run mike set-default latest
+
+echo ""
+echo "👍 Done"
+echo ""

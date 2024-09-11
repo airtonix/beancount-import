@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# mise description="Build the documentation"
+# mise sources=["mkdocs.yml", "docs/**/*.md", "beancount_importer_rules/**/*.py"]
+
+echo ""
+echo "🍜 Serving documentation"
+echo ""
+
+pdm run mkdocs serve
+
+echo ""
+echo "👍 Done"
+echo ""

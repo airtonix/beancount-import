@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# mise description="runs unit tests on the project"
+
+output=${1:-"/dev/tty"}
+
+run_local_tests() {
+    pdm run pytest --verbosity=0
+}
+
+run_cicd_tests() {
+    pdm run pytest -v \
+        --md-report \
+        --md-report-flavor gfm \
+        --md-report-exclude-outcomes passed skipped xpassed \
+        --md-report-output "${output}"
+
+    # find all .bats files in the repo and run them
+}
+
+echo ""
+echo "🍜 Running tests"
+echo ""
+
+# Run python tests
+[ -z "${CI}" ] && run_local_tests
+[ -n "${CI}" ] && run_cicd_tests
+
+echo ""
+echo "👍 Done"
+echo ""
