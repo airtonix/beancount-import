@@ -36,8 +36,8 @@ from beancount_importer_rules.post_processor import (
     extract_existing_transactions,
     txn_to_text,
 )
+from beancount_importer_rules.processor.match_paths import get_matched_input_files
 from beancount_importer_rules.processor.process_imports import (
-    inputconfig_list_to_dict,
     process_imports,
 )
 from beancount_importer_rules.templates import make_environment
@@ -135,17 +135,22 @@ class ImportRuleEngine:
     def process_transactions(self):
         output = IProcessedTransactionsMap()
 
-        transactions = self.progress.track(
-            process_imports(
-                inputs=inputconfig_list_to_dict(self.config.inputs),
+        extractor_hash = get_matched_input_files(
+            [directive for directive in self.config.inputs], self.workdir_path
+        )
+
+        transactions = []
+        for fingerprint, manager in extractor_hash.items():
+            imported = process_imports(
+                fingerprint=fingerprint,
+                manager=manager,
                 imports=self.config.imports,
                 context=self.config.context,
                 input_dir=self.workdir_path,
                 on_import_processed=self.on_import_processed,
                 on_transaction_processed=self.on_transaction_processed,
-            ),
-            description="Processing",
-        )
+            )
+            transactions.extend(imported)
 
         for txn in transactions:
             if isinstance(txn, GeneratedTransaction):

@@ -14,8 +14,8 @@ from beancount_importer_rules.data_types import (
     UnprocessedTransaction,
 )
 from beancount_importer_rules.engine import load_config
+from beancount_importer_rules.processor.match_paths import get_matched_input_files
 from beancount_importer_rules.processor.process_imports import (
-    inputconfig_list_to_dict,
     process_imports,
 )
 
@@ -172,12 +172,20 @@ def test_process_imports(
     config_path = folder_path / "import.yaml"
     doc = load_config(config_path, workdir_path=fixtures_folder)
 
-    processed = process_imports(
-        context=doc.context,
-        imports=doc.imports,
-        inputs=inputconfig_list_to_dict(doc.inputs),
-        input_dir=folder_path,
+    extractor_hash = get_matched_input_files(
+        [directive for directive in doc.inputs], folder_path
     )
+    processed = []
+
+    for fingerprint, manager in extractor_hash.items():
+        imported = process_imports(
+            fingerprint=fingerprint,
+            manager=manager,
+            context=doc.context,
+            imports=doc.imports,
+            input_dir=folder_path,
+        )
+        processed.extend(imported)
 
     result = list(processed)
 
