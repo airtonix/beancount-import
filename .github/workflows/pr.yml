@@ -34,7 +34,6 @@ jobs:
         run: |
           mise run test:lint
           mise run test:types
-          mise run test:test
 
       - name: Run tests
         shell: bash
