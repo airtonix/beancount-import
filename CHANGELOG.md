@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.7](https://github.com/zenobi-us/beancount-importer-rules/compare/v0.1.6...v0.1.7) (2024-09-10)
+
+
+### Bug Fixes
+
+* processing of workflow outputs ([#30](https://github.com/zenobi-us/beancount-importer-rules/issues/30)) ([98a88c6](https://github.com/zenobi-us/beancount-importer-rules/commit/98a88c623b57313c9a736a080f371c3799d14233))
+* refactor processor to facilitate progress bar ([#22](https://github.com/zenobi-us/beancount-importer-rules/issues/22)) ([97bae20](https://github.com/zenobi-us/beancount-importer-rules/commit/97bae20905f4bc4bd787194eed349a4854771c1f))
+* release data output ([#31](https://github.com/zenobi-us/beancount-importer-rules/issues/31)) ([4650882](https://github.com/zenobi-us/beancount-importer-rules/commit/465088239a76a731e35b4098be9407ca4c3400f1))
+* use version computation ([#29](https://github.com/zenobi-us/beancount-importer-rules/issues/29)) ([4115987](https://github.com/zenobi-us/beancount-importer-rules/commit/4115987e095bfc26d4f07df8d60143d3e6b69dd5))
+
 ## [0.1.6](https://github.com/zenobi-us/beancount-importer-rules/compare/v0.1.5...v0.1.6) (2024-09-08)
 
 
