@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# This script is used to run the tests for the Mise project.
+
+mise run test:unit
+mise run test:integration
+mise run test:lint
+mise run test:types
+mise run test:secrets

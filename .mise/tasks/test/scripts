@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# mise description="runs unit tests on the project"
+
+# find all .bats files in the repo and run them
+# TODO: output to github step summary
+find . -type f -name "*.bats" -exec bats {} \;
+
+echo ""
+echo "👍 Done"
+echo ""

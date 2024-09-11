@@ -4,8 +4,6 @@
 payload="${1:-"{\"prs_created\": true, \"releases_created\": false, \"release_version\": \"\"}"}"
 output="${2:-/dev/tty}"
 
-echo "Payload: ${payload}"
-
 prs_created=$(echo "${payload}" | jq -r '.prs_created')
 releases_created=$(echo "${payload}" | jq -r '.releases_created')
 release_version=$(echo "${payload}" | jq -r '.release_version')
@@ -14,7 +12,14 @@ if [ "${prs_created}" = "true" ]; then
     # https://packaging.python.org/en/latest/discussions/versioning/#local-version-identifiers
     # https://discuss.python.org/t/pip-pre-and-beta-dev-versions/9665
     # https://stackoverflow.com/a/24293364/454615
-    echo "Version=$(mise run compute-dev-version)" >>"$output"
+
+    tag=$(git describe --tags --abbrev=0)
+    commits_since_last_tag=$(git log "$tag"..HEAD --oneline | wc -l)
+    # strip v from tag
+    last_tag=${tag#v}
+    version="${last_tag}.dev${commits_since_last_tag}"
+
+    echo "Version=${version}" >>"$output"
     echo "Track=dev" >>"$output"
 fi
 

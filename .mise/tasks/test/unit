@@ -25,10 +25,6 @@ echo ""
 [ -z "${CI}" ] && run_local_tests
 [ -n "${CI}" ] && run_cicd_tests
 
-# find all .bats files in the repo and run them
-# TODO: output to github step summary
-find . -type f -name "*.bats" -exec bats {} \;
-
 echo ""
 echo "👍 Done"
 echo ""

@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:9ee90a5f4f26f59b8dfdc7eb915be420f9bfaf7c0243a4d84499929d866cdc39"
+content_hash = "sha256:efe1a9dee23f549b7044274e38d456f376d26a572ad3ce459436994909d6142f"
 
 [[metadata.targets]]
 requires_python = ">=3.12"
@@ -445,6 +445,20 @@ dependencies = [
 files = [
     {file = "dep_logic-0.4.5-py3-none-any.whl", hash = "sha256:8c7c4310413fe88129216865e20a5c656b4dc8c72b118dbdcda04565d5b00dde"},
     {file = "dep_logic-0.4.5.tar.gz", hash = "sha256:e6e831bb0eb10b200864c482ad6a1c7f08f5c15cdb5909c4dfb8186976368a78"},
+]
+
+[[package]]
+name = "detect-secrets"
+version = "1.5.0"
+summary = "Tool for detecting secrets in the codebase"
+groups = ["dev"]
+dependencies = [
+    "pyyaml",
+    "requests",
+]
+files = [
+    {file = "detect_secrets-1.5.0-py3-none-any.whl", hash = "sha256:e24e7b9b5a35048c313e983f76c4bd09dad89f045ff059e354f9943bf45aa060"},
+    {file = "detect_secrets-1.5.0.tar.gz", hash = "sha256:6bb46dcc553c10df51475641bb30fd69d25645cc12339e46c824c1e0c388898a"},
 ]
 
 [[package]]

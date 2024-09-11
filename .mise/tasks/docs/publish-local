@@ -10,7 +10,12 @@ mise run secrets-scan
 mise run lint
 mise run docs-build
 
-version=$(mise run compute-dev-version)
+tag=$(git describe --tags --abbrev=0)
+commits_since_last_tag=$(git log "$tag"..HEAD --oneline | wc -l)
+# strip v from tag
+last_tag=${tag#v}
+version="${last_tag}.dev${commits_since_last_tag}"
+
 mise run docs-publish "${version}" "dev"
 
 echo ""
