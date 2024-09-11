@@ -32,4 +32,11 @@ def test_engine_run():
     )
 
     engine.run()
+
     assert engine
+
+    # Check the output file
+    output_dir = workdir / "books" / "imported"
+
+    # There should be one output for each input file
+    assert len(list(output_dir.glob("*.bean"))) == 2
