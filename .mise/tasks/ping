@@ -1,0 +1,5 @@
+#!/bin/bash
+
+pong="${1:-pong}"
+
+echo "Pong: $pong"

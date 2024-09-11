@@ -5,13 +5,13 @@ debug() {
 }
 
 @test "doesn't explode on empty input" {
-    run "$BATS_TEST_DIRNAME/get_release_version.sh"
+    run "$BATS_TEST_DIRNAME/get-release-version"
     [ "$status" -eq 0 ]
     [ "$output" = "" ]
 }
 
 @test "provides a dev version" {
-    run "$BATS_TEST_DIRNAME/get_release_version.sh" \
+    run "$BATS_TEST_DIRNAME/get-release-version" \
         '{"prs_created": true, "releases_created": false, "release_version": null}' \
         "$BATS_TEST_TMPDIR/output"
 
@@ -38,7 +38,7 @@ debug() {
 
 @test "provides a stable version" {
     expected_version="1.2.3"
-    run "$BATS_TEST_DIRNAME/get_release_version.sh" \
+    run "$BATS_TEST_DIRNAME/get-release-version" \
         "{\"releases_created\": true, \"release_version\": \""${expected_version}\""}" \
         "$BATS_TEST_TMPDIR/output"
 

@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# mise description="Setup the project"
+# mise sources=["beancount_importer_rules/**/*.py", "pyproject.toml"]
+
+echo ""
+echo "🍜 Publishing project"
+echo ""
+
+pdm publish
+
+echo ""
+echo "👍 Done"
+echo ""

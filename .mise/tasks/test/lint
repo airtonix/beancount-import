@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# mise description="Lint the project"
+# mise sources=["beancount_importer_rules/**/*.py", "tests/**/*.py"]
+
+echo ""
+echo "🍜 Linting files"
+echo ""
+
+pdm run ruff check
+
+echo ""
+echo "👍 Done"
+echo ""

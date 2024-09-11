@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# mise description="Format the project"
+
+echo ""
+echo "🍜 Formatting project"
+echo ""
+
+pdm run ruff check ./beancount_importer_rules/** ./tests/** --fix
+
+echo ""
+echo "👍 Done"
+echo ""

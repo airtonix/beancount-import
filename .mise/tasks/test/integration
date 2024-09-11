@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# mise alias="ci"
+# mise description="runs integration tests on the project"
+# mise sources=["beancount_importer_rules/**/*.py", "tests/**/*.py"]
+# mise outputs=["tests/fixtures/engine/imported/*.bean"]
+
+echo ""
+echo "🍜 Running tests"
+echo ""
+
+pdm run beancount-import import \
+    -w tests/fixtures/engine \
+    -b books/main.bean \
+    -c import.yaml
+
+echo ""
+echo "👍 Done"
+echo ""

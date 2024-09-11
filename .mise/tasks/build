@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# mise description="Setup the project"
+
+# Builds the project
+#
+# Produces a dist/ directory with the built project that can
+# be uploaded to PyPI
+#
+# If running this locally, your next step is to run `mise run publish-local`
+# to publish the built project to the PyPI server.
+#
+# If running this on GitHub Actions, your next step is to run `mise run publish`
+
+echo ""
+echo "🍜 Building project"
+echo ""
+
+pdm build
+
+echo ""
+echo "👍 Done"
+echo ""

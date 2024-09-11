@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# mise description="runs typechecking on the project"
+# mise sources=["beancount_importer_rules/**/*.py", "pyproject.toml"]
+
+echo ""
+echo "🍜 Checking types"
+echo ""
+
+pdm run pyright ./beancount_importer_rules
+
+echo ""
+echo "👍 Done"
+echo ""

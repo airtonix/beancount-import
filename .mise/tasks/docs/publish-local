@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# mise description="Build the documentation"
+# mise sources=["mkdocs.yml", "docs/**/*.md", "beancount_importer_rules/**/*.py"]
+
+echo ""
+echo "🍜 Deploying documentation [DEV]"
+echo ""
+
+mise run secrets-scan
+mise run lint
+mise run docs-build
+
+version=$(mise run compute-dev-version)
+mise run docs-publish "${version}" "dev"
+
+echo ""
+echo "👍 Done"
+echo ""

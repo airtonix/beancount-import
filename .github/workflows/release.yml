@@ -54,13 +54,14 @@ jobs:
 
       - name: Preflight
         run: |
-          just lint
-          just types
-          just test
-          just unittest
-          just build
-          just docs
-          just integrationtest
+          mise run test:lint
+          mise run test:types
+          mise run test:test
+          mise run test:unit
+          mise run test:integration
+
+          mise run build
+          mise run docs:build
 
   DeployProd:
     needs:
@@ -99,7 +100,7 @@ jobs:
       - name: Rc Version
         id: get_release_version
         run: |
-          .github/cmds/get_release_version.sh \
+          mise run compute-release-version \
             $(echo "${{ toJSON(needs.Process.outputs) }}" | yq -o=json -I=0 .) \
             "$GITHUB_OUTPUT"
 
@@ -109,13 +110,13 @@ jobs:
         if: ${{ needs.Process.outputs.releases_created == 'true' || needs.Process.outputs.prs_created == 'true' }}
         run: |
           pdm version ${{ steps.get_release_version.outputs.Version }}
-          just build || true
-          just publish pypi
+          mise run build || true
+          mise run publish pypi
 
       # we want to publish the docs on every change to the master branch
       - name: Docs
         if:
         run: |
-          just docs-deploy \
+          mise run docs:publish \
             ${{ steps.get_release_version.outputs.Version }} \
             ${{ steps.get_release_version.outputs.Track }}
