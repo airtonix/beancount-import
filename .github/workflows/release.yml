@@ -71,11 +71,14 @@ jobs:
       name: pypi
       url: https://pypi.org/p/beancount-importer-rules
     steps:
+      # fetch depth 0 is needed to get all the tags for mkdocs
       - name: Checkout
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # 4.1.7
         with:
           fetch-depth: 0
 
+      # need to setup git author so that mkdocs-mike can commit the changes
+      # to the gh-pages branch
       - name: setup git author
         uses: ./.github/actions/setup-git-author
         with:
@@ -91,6 +94,8 @@ jobs:
       - name: Install Python Packages
         uses: ./.github/actions/setup-dependencies
 
+      # If we've created a release, we want to publish it with the computed version
+      # If we've created a PR, we want to publish it, but with a dev version
       - name: Rc Version
         id: get_release_version
         run: |
@@ -98,17 +103,19 @@ jobs:
             $(echo "${{ toJSON(needs.Process.outputs) }}" | yq -o=json -I=0 .) \
             "$GITHUB_OUTPUT"
 
-      - name: Preflight
+      # we only want to publish when a release pr is merged, created or updated
+      # chore prs should not trigger a publish
+      - name: Publish
+        if: ${{ needs.Process.outputs.releases_created == 'true' || needs.Process.outputs.prs_created == 'true' }}
         run: |
           pdm version ${{ steps.get_release_version.outputs.Version }}
           just build || true
+          just publish pypi
 
-      - name: Publish
-        # if a release PR was processed and a release created
+      # we want to publish the docs on every change to the master branch
+      - name: Docs
         if:
         run: |
-          echo 'Release PR Merged.'
-          just publish pypi
           just docs-deploy \
             ${{ steps.get_release_version.outputs.Version }} \
             ${{ steps.get_release_version.outputs.Track }}
