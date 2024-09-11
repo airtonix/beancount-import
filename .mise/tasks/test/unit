@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # mise description="runs unit tests on the project"
 
-output=${REPORT_OUTPUT:-"/dev/tty"}
+output=${1:-"/dev/tty"}
 
 run_local_tests() {
     pdm run pytest --verbosity=0

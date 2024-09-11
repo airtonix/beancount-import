@@ -1,28 +1,56 @@
 #!/usr/bin/env bash
 # mise description="ouputs the version and track of the release"
 
-payload="${1:-"{\"prs_created\": true, \"releases_created\": false, \"release_version\": \"\"}"}"
+# https://packaging.python.org/en/latest/discussions/versioning/#valid-version-numbers
+# https://discuss.python.org/t/pip-pre-and-beta-dev-versions/9665
+# https://stackoverflow.com/a/24293364/454615
+
+payload="${1:-"{\"prs_created\": true, \"is_pr_release\": false, \"releases_created\": false, \"release_version\": \"\"}"}"
 output="${2:-/dev/tty}"
 
 prs_created=$(echo "${payload}" | jq -r '.prs_created')
 releases_created=$(echo "${payload}" | jq -r '.releases_created')
 release_version=$(echo "${payload}" | jq -r '.release_version')
+is_pr_release=$(echo "${payload}" | jq -r '.is_pr_release')
 
+tag=$(git describe --tags --abbrev=0)
+commits_since_last_tag=$(git log "$tag"..HEAD --oneline | wc -l)
+# strip v from tag
+last_tag=${tag#v}
+
+#
+# Dev releases are those that occur on the main branch
+# as a result of merging a PR that is deemed to affect the
+# version of the project.
+# According to conventional commits, this is a PR that has
+# a breaking change, a feature or a fix.
+#
 if [ "${prs_created}" = "true" ]; then
-    # https://packaging.python.org/en/latest/discussions/versioning/#local-version-identifiers
-    # https://discuss.python.org/t/pip-pre-and-beta-dev-versions/9665
-    # https://stackoverflow.com/a/24293364/454615
-
-    tag=$(git describe --tags --abbrev=0)
-    commits_since_last_tag=$(git log "$tag"..HEAD --oneline | wc -l)
-    # strip v from tag
-    last_tag=${tag#v}
     version="${last_tag}.dev${commits_since_last_tag}"
-
     echo "Version=${version}" >>"$output"
     echo "Track=dev" >>"$output"
 fi
 
+#
+# PR releases are those that occur on a PR branch.
+#
+# We consider them as beta releases :
+#  - since they are not stable.
+#  - we reserve alpha for other more unstable releases.
+#  - we reserve dev releases for those that occur when the PR is merged.
+if [ "${is_pr_release}" = "true" ]; then
+    version="${last_tag}.b${commits_since_last_tag}"
+    echo "Version=${version}" >>"$output"
+    echo "Track=beta" >>"$output"
+fi
+
+#
+# A release is created when release please
+# is run on the main branch and determines
+# that a release should be created.
+#
+# Usually this is when a special release PR is merged.
+#
 if [ "${releases_created}" = "true" ]; then
     echo "Version=${release_version}" >>"$output"
     echo "Track=stable" >>"$output"
