@@ -91,6 +91,7 @@ jobs:
           install: true # [default: true] run `mise install`
           cache: true # [default: true] cache mise using GitHub's cache
           log_level: debug # [default: info] log level
+          experimental: true
 
       - name: Install Python Packages
         uses: ./.github/actions/setup-dependencies
