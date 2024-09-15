@@ -1,5 +1,3 @@
-import pytest
-
 from beancount_importer_rules.data_types import (
     SimpleTxnMatchRule,
     StrExactMatch,
@@ -9,93 +7,83 @@ from beancount_importer_rules.data_types import (
 from beancount_importer_rules.processor.matchers import match_transaction_with_vars
 
 
-@pytest.mark.parametrize(
-    "txn, rules, common_cond, expected",
-    [
-        (
-            Transaction(extractor="MOCK_EXTRACTOR"),
-            [
-                TxnMatchVars(
-                    cond=SimpleTxnMatchRule(extractor=StrExactMatch(equals="OTHER")),
-                ),
-                TxnMatchVars(
-                    cond=SimpleTxnMatchRule(
-                        extractor=StrExactMatch(equals="MOCK_EXTRACTOR")
-                    ),
-                    vars=dict(foo="bar"),
-                ),
-            ],
-            None,
-            TxnMatchVars(
-                cond=SimpleTxnMatchRule(
-                    extractor=StrExactMatch(equals="MOCK_EXTRACTOR")
-                ),
-                vars=dict(foo="bar"),
-            ),
+def test_match_transaction_with_vars_empty():
+    txn = Transaction(extractor="MOCK_EXTRACTOR")
+    rules = [
+        TxnMatchVars(
+            cond=SimpleTxnMatchRule(extractor=StrExactMatch(equals="OTHER")),
         ),
-        (
-            Transaction(extractor="MOCK_EXTRACTOR"),
-            [
-                TxnMatchVars(
-                    cond=SimpleTxnMatchRule(extractor=StrExactMatch(equals="OTHER")),
-                    vars=dict(eggs="spam"),
-                ),
-                TxnMatchVars(
-                    cond=SimpleTxnMatchRule(
-                        extractor=StrExactMatch(equals="MOCK_EXTRACTOR")
-                    ),
-                    vars=dict(foo="bar"),
-                ),
-            ],
-            SimpleTxnMatchRule(payee=StrExactMatch(equals="PAYEE")),
-            None,
+        TxnMatchVars(
+            cond=SimpleTxnMatchRule(extractor=StrExactMatch(equals="MOCK_EXTRACTOR")),
+            vars=dict(foo="bar"),
         ),
-        (
-            Transaction(extractor="MOCK_EXTRACTOR", payee="PAYEE"),
-            [
-                TxnMatchVars(
-                    cond=SimpleTxnMatchRule(extractor=StrExactMatch(equals="OTHER")),
-                    vars=dict(eggs="spam"),
-                ),
-                TxnMatchVars(
-                    cond=SimpleTxnMatchRule(
-                        extractor=StrExactMatch(equals="MOCK_EXTRACTOR")
-                    ),
-                    vars=dict(foo="bar"),
-                ),
-            ],
-            SimpleTxnMatchRule(payee=StrExactMatch(equals="PAYEE")),
-            TxnMatchVars(
-                cond=SimpleTxnMatchRule(
-                    extractor=StrExactMatch(equals="MOCK_EXTRACTOR")
-                ),
-                vars=dict(foo="bar"),
-            ),
-        ),
-        (
-            Transaction(extractor="MOCK_EXTRACTOR"),
-            [
-                TxnMatchVars(
-                    cond=SimpleTxnMatchRule(extractor=StrExactMatch(equals="OTHER")),
-                    vars=dict(eggs="spam"),
-                ),
-                TxnMatchVars(
-                    cond=SimpleTxnMatchRule(extractor=StrExactMatch(equals="NOPE")),
-                    vars=dict(foo="bar"),
-                ),
-            ],
-            None,
-            None,
-        ),
-    ],
-)
-def test_match_transaction_with_vars(
-    txn: Transaction,
-    rules: list[TxnMatchVars],
-    common_cond: SimpleTxnMatchRule | None,
-    expected: TxnMatchVars,
-):
-    assert (
-        match_transaction_with_vars(txn, rules, common_condition=common_cond)
-        == expected
+    ]
+
+    common_cond = None
+    expected = TxnMatchVars(
+        cond=SimpleTxnMatchRule(extractor=StrExactMatch(equals="MOCK_EXTRACTOR")),
+        vars=dict(foo="bar"),
     )
+
+    outcome = match_transaction_with_vars(txn, rules, common_condition=common_cond)
+
+    assert outcome == expected
+
+
+def test_match_transaction_with_common_cond():
+    txn = Transaction(extractor="MOCK_EXTRACTOR")
+    rules = [
+        TxnMatchVars(
+            cond=SimpleTxnMatchRule(extractor=StrExactMatch(equals="OTHER")),
+            vars=dict(eggs="spam"),
+        ),
+        TxnMatchVars(
+            cond=SimpleTxnMatchRule(extractor=StrExactMatch(equals="MOCK_EXTRACTOR")),
+            vars=dict(foo="bar"),
+        ),
+    ]
+    common_cond = SimpleTxnMatchRule(payee=StrExactMatch(equals="PAYEE"))
+    expected = None
+    outcome = match_transaction_with_vars(txn, rules, common_condition=common_cond)
+    assert outcome == expected
+
+
+def test_match_transaction_with_vars_common():
+    txn = Transaction(extractor="MOCK_EXTRACTOR", payee="PAYEE")
+    rules = [
+        TxnMatchVars(
+            cond=SimpleTxnMatchRule(extractor=StrExactMatch(equals="OTHER")),
+            vars=dict(eggs="spam"),
+        ),
+        TxnMatchVars(
+            cond=SimpleTxnMatchRule(extractor=StrExactMatch(equals="MOCK_EXTRACTOR")),
+            vars=dict(foo="bar"),
+        ),
+    ]
+
+    common_cond = SimpleTxnMatchRule(payee=StrExactMatch(equals="PAYEE"))
+    expected = TxnMatchVars(
+        cond=SimpleTxnMatchRule(extractor=StrExactMatch(equals="MOCK_EXTRACTOR")),
+        vars=dict(foo="bar"),
+    )
+    outcome = match_transaction_with_vars(txn, rules, common_condition=common_cond)
+    assert outcome == expected
+
+
+def test_match_transaction_with_vars():
+    txn = Transaction(extractor="MOCK_EXTRACTOR")
+    rules = [
+        TxnMatchVars(
+            cond=SimpleTxnMatchRule(extractor=StrExactMatch(equals="OTHER")),
+            vars=dict(eggs="spam"),
+        ),
+        TxnMatchVars(
+            cond=SimpleTxnMatchRule(extractor=StrExactMatch(equals="NOPE")),
+            vars=dict(foo="bar"),
+        ),
+    ]
+    common_cond = None
+    expected = None
+    outcome = match_transaction_with_vars(txn, rules, common_condition=common_cond)
+
+    assert outcome == expected
