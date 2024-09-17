@@ -1,12 +1,22 @@
 import pathlib
+import re
 
 from beancount_importer_rules.data_types import (
     SimpleTxnMatchRule,
+    StrExactMatch,
     StrMatch,
     StrRegexMatch,
     Transaction,
     TxnMatchVars,
 )
+
+
+def is_valid_regex(pattern: str) -> bool:
+    try:
+        re.compile(pattern)
+        return True
+    except re.error:
+        return False
 
 
 def match_file(pattern: StrMatch, filepath: pathlib.Path | pathlib.PurePath) -> bool:
@@ -23,8 +33,14 @@ def match_str(pattern: StrMatch | None, value: str | None) -> bool:
     if pattern is None:
         return True
 
+    if pattern == value:
+        return True
+
+    if isinstance(pattern, str) and is_valid_regex(pattern):
+        return StrRegexMatch(regex=pattern).test(value)
+
     if isinstance(pattern, str):
-        pattern = StrRegexMatch(regex=pattern)
+        return StrExactMatch(equals=pattern).test(value)
 
     return pattern.test(value)
 
