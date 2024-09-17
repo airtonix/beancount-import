@@ -3,19 +3,23 @@
 ### 1. Install the package
 
 [pip](https://pypi.org/project/pip/)
-```bash
-pip install mypackage
+
+```sh
+pip install beancount-importer-rules=={{ git.short_tag }}
 ```
 
-[poetry](https://python-poetry.org/)
-```bash
-poetry add mypackage
+or
+
+```sh
+pdm install beancount-importer-rules=={{ git.short_tag }}
 ```
 
-[pdm](https://pdm.fming.dev/)
-```bash
-pdm add mypackage
+or
+
+```sh
+poetry add beancount-importer-rules=={{ git.short_tag }}
 ```
+
 
 ### 2. Create extractors
 

@@ -71,6 +71,7 @@ plugins:
   - social
   - search
   - tags
+  - macros
   - autorefs
   - mkdocstrings:
       handlers:
