@@ -27,11 +27,11 @@ class Transaction:
     # the unique id of the transaction
     transaction_id: str | None = None
     # date of the transaction
-    date: datetime.date | None = None
+    date: str | None = None
     # date when the transaction posted
-    post_date: datetime.date | None = None
+    post_date: str | None = None
     # timestamp of the transaction
-    timestamp: datetime.datetime | None = None
+    timestamp: str | None = None
     # timezone of the transaction, needs to be one of timezone value supported by pytz
     timezone: str | None = None
     # description of the transaction
@@ -269,6 +269,43 @@ class DateBeforeMatch(MatchBaseModel):
             return False
 
 
+class DateBetweenMatch(MatchBaseModel):
+    """
+    To match values between two dates, one can do this:
+
+    ```YAML
+    imports:
+    - match:
+        date:
+          date_before: "2021-01-01"
+          date_after: "2020-01-01"
+          format: "%Y-%m-%d"
+    ```
+
+    """
+
+    date_before: str
+    """ The date to match before"""
+    date_after: str
+    """ The date to match after"""
+    format: str
+    """ The format of the date. used to parse the value date and the date to match"""
+
+    def __str__(self) -> str:
+        return f"date_before:{self.date_before}"
+
+    def test(self, value: str) -> bool:
+        try:
+            value_as_date = arrow.get(value, self.format)
+            match_date_before = arrow.get(self.date_before, self.format)
+            match_date_after = arrow.get(self.date_after, self.format)
+            return (
+                match_date_before > value_as_date and match_date_after < value_as_date
+            )
+        except ValueError:
+            return False
+
+
 class DateAfterMatch(MatchBaseModel):
     """
     To match values after a date, one can do this:
@@ -407,6 +444,7 @@ StrMatch = (
     | DateSameDayMatch
     | DateSameMonthMatch
     | DateSameYearMatch
+    | DateBetweenMatch
 )
 
 
