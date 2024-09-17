@@ -12,11 +12,16 @@
     ]
   },
   {
-    "version": "0.1.7.dev4",
-    "title": "0.1.7.dev4",
+    "version": "0.1.7.dev5",
+    "title": "0.1.7.dev5",
     "aliases": [
       "dev"
     ]
+  },
+  {
+    "version": "0.1.7.dev4",
+    "title": "0.1.7.dev4",
+    "aliases": []
   },
   {
     "version": "0.1.7.dev1",
