@@ -22,7 +22,7 @@ or
 poetry add beancount-importer-rules
 ```
 
-For more information see the [documentation](https://zenobi-us.github.io/beancount-import-rules/latest/).
+For more information see the [documentation](https://zenobi-us.github.io/beancount-importer-rules/latest/).
 
 ## Contributing
 
