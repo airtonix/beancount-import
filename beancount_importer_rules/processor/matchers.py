@@ -26,7 +26,7 @@ def match_file(pattern: StrMatch, filepath: pathlib.Path | pathlib.PurePath) -> 
     return pattern.test(str(filepath))
 
 
-def match_str(pattern: StrMatch | None, value: str | None) -> bool:
+def match_str(pattern: StrMatch, value: str | None) -> bool:
     if value is None:
         return False
 
@@ -37,10 +37,10 @@ def match_str(pattern: StrMatch | None, value: str | None) -> bool:
         return True
 
     if isinstance(pattern, str) and is_valid_regex(pattern):
-        return StrRegexMatch(regex=pattern).test(value)
+        pattern = StrRegexMatch(regex=pattern)
 
     if isinstance(pattern, str):
-        return StrExactMatch(equals=pattern).test(value)
+        pattern = StrExactMatch(equals=pattern)
 
     return pattern.test(value)
 
