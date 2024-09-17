@@ -11,6 +11,41 @@ import pydantic
 from pydantic import BaseModel, RootModel
 
 
+def stringify_value(
+    value: datetime.date
+    | datetime.datetime
+    | decimal.Decimal
+    | str
+    | int
+    | float
+    | bool
+    | None,
+) -> str:
+    if isinstance(value, datetime.date):
+        return arrow.get(value).format("YYYY-MM-DD")
+
+    if isinstance(value, datetime.datetime):
+        return arrow.get(value).format("YYYY-MM-DD HH:mm:ss")
+
+    if isinstance(value, decimal.Decimal):
+        return str(value)
+
+    if isinstance(value, str):
+        return value
+
+    if isinstance(value, bool):
+        return str(value)
+
+    if isinstance(value, int):
+        return str(value)
+
+    if isinstance(value, float):
+        return str(value)
+
+    else:
+        return str(value)
+
+
 @dataclasses.dataclass(frozen=True)
 class Transaction:
     """
@@ -27,11 +62,11 @@ class Transaction:
     # the unique id of the transaction
     transaction_id: str | None = None
     # date of the transaction
-    date: str | None = None
+    date: datetime.date | None = None
     # date when the transaction posted
-    post_date: str | None = None
+    post_date: datetime.date | None = None
     # timestamp of the transaction
-    timestamp: str | None = None
+    timestamp: datetime.datetime | None = None
     # timezone of the transaction, needs to be one of timezone value supported by pytz
     timezone: str | None = None
     # description of the transaction
@@ -117,7 +152,7 @@ class StrRegexMatch(MatchBaseModel):
         return f"regex:{self.regex}"
 
     def test(self, value: str) -> bool:
-        return re.search(self.regex, value) is not None
+        return re.search(self.regex, stringify_value(value)) is not None
 
 
 class StrExactMatch(MatchBaseModel):
@@ -140,7 +175,7 @@ class StrExactMatch(MatchBaseModel):
         return f"equals:{self.equals}"
 
     def test(self, value: str) -> bool:
-        return self.equals == value
+        return self.equals == stringify_value(value)
 
 
 class StrOneOfMatch(MatchBaseModel):
@@ -165,7 +200,7 @@ class StrOneOfMatch(MatchBaseModel):
         return "one_of:{','.join(self.one_of)}"
 
     def test(self, value: str) -> bool:
-        return value in self.one_of
+        return stringify_value(value) in self.one_of
 
 
 class StrPrefixMatch(MatchBaseModel):
@@ -188,7 +223,7 @@ class StrPrefixMatch(MatchBaseModel):
         return f"prefix:{self.prefix}"
 
     def test(self, value: str) -> bool:
-        return value.startswith(self.prefix)
+        return stringify_value(value).startswith(self.prefix)
 
 
 class StrSuffixMatch(MatchBaseModel):
@@ -211,7 +246,7 @@ class StrSuffixMatch(MatchBaseModel):
         return f"suffix:{self.suffix}"
 
     def test(self, value: str) -> bool:
-        return value.endswith(self.suffix)
+        return stringify_value(value).endswith(self.suffix)
 
 
 class StrContainsMatch(MatchBaseModel):
@@ -235,7 +270,7 @@ class StrContainsMatch(MatchBaseModel):
         return f"contains:{self.contains}"
 
     def test(self, value: str) -> bool:
-        return self.contains in value
+        return self.contains in stringify_value(value)
 
 
 class DateBeforeMatch(MatchBaseModel):
@@ -260,9 +295,9 @@ class DateBeforeMatch(MatchBaseModel):
     def __str__(self) -> str:
         return f"date_before:{self.date_before}"
 
-    def test(self, value: str) -> bool:
+    def test(self, value: str | datetime.date) -> bool:
         try:
-            value_as_date = arrow.get(value, self.format)
+            value_as_date = arrow.get(stringify_value(value), self.format)
             match_date = arrow.get(self.date_before, self.format)
             return match_date > value_as_date
         except ValueError:
@@ -294,9 +329,9 @@ class DateBetweenMatch(MatchBaseModel):
     def __str__(self) -> str:
         return f"date_before:{self.date_before}"
 
-    def test(self, value: str) -> bool:
+    def test(self, value: str | datetime.date) -> bool:
         try:
-            value_as_date = arrow.get(value, self.format)
+            value_as_date = arrow.get(stringify_value(value), self.format)
             match_date_before = arrow.get(self.date_before, self.format)
             match_date_after = arrow.get(self.date_after, self.format)
             return (
@@ -327,9 +362,9 @@ class DateAfterMatch(MatchBaseModel):
     def __str__(self) -> str:
         return f"date_after:{self.date_after}"
 
-    def test(self, value: str) -> bool:
+    def test(self, value: str | datetime.date) -> bool:
         try:
-            value_as_date = arrow.get(value, self.format)
+            value_as_date = arrow.get(stringify_value(value), self.format)
             match_date = arrow.get(self.date_after, self.format)
             return match_date < value_as_date
         except ValueError:
@@ -357,10 +392,10 @@ class DateSameDayMatch(MatchBaseModel):
     def __str__(self) -> str:
         return f"date_same_day:{self.date_same_day}"
 
-    def test(self, value: str) -> bool:
+    def test(self, value: str | datetime.date) -> bool:
         try:
             # reduce the value to the day only
-            value_as_date = arrow.get(value, self.format).floor("day")
+            value_as_date = arrow.get(stringify_value(value), self.format).floor("day")
             match_date = arrow.get(self.date_same_day, self.format).floor("day")
             return value_as_date == match_date
         except ValueError:
@@ -388,10 +423,12 @@ class DateSameMonthMatch(MatchBaseModel):
     def __str__(self) -> str:
         return f"date_same_month:{self.date_same_month}"
 
-    def test(self, value: str) -> bool:
+    def test(self, value: str | datetime.date) -> bool:
         try:
             # reduce the value to the month only
-            value_as_date = arrow.get(value, self.format).floor("month")
+            value_as_date = arrow.get(stringify_value(value), self.format).floor(
+                "month"
+            )
             match_date = arrow.get(self.date_same_month, self.format).floor("month")
             # set the day to 1 to compare only the month
             return value_as_date == match_date
@@ -420,10 +457,10 @@ class DateSameYearMatch(MatchBaseModel):
     def __str__(self) -> str:
         return f"date_same_year:{self.date_same_year}"
 
-    def test(self, value: str) -> bool:
+    def test(self, value: str | datetime.date) -> bool:
         try:
             # reduce the value to the year only
-            value_as_date = arrow.get(value, self.format).floor("year")
+            value_as_date = arrow.get(stringify_value(value), self.format).floor("year")
             match_date = arrow.get(self.date_same_year, self.format).floor("year")
             # set the day and month to 1 to compare only the year
             return value_as_date == match_date

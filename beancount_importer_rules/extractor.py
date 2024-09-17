@@ -233,8 +233,9 @@ class ExtractorCsvBase(ExtractorBase):
             for field in reader.fieldnames:
                 hash.update(row[field].encode("utf8"))
 
+            date = self.parse_date(row[self.date_field])
             return Fingerprint(
-                starting_date=self.parse_date(row[self.date_field]),
+                starting_date=date,
                 first_row_hash=hash.hexdigest(),
             )
 
