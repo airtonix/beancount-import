@@ -114,6 +114,12 @@ jobs:
           mise run build || true
           mise run publish pypi
 
+      - name: Tag Dev Version
+        if: ${{ needs.Process.outputs.prs_created == 'true' }}
+        run: |
+          git tag -a ${{ steps.get_release_version.outputs.Version }}
+          git push origin ${{ steps.get_release_version.outputs.Version }}
+
       # we want to publish the docs on every change to the master branch
       - name: Docs
         if:
