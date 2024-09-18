@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.1.8](https://github.com/zenobi-us/beancount-importer-rules/compare/v0.1.7...v0.1.8) (2024-09-18)
+
+
+### Bug Fixes
+
+* date fields are treated as strings ([#44](https://github.com/zenobi-us/beancount-importer-rules/issues/44)) ([c814a21](https://github.com/zenobi-us/beancount-importer-rules/commit/c814a2157665ce5b20c999213d5c7ba07be8889c))
+* importer now processes all files ([#34](https://github.com/zenobi-us/beancount-importer-rules/issues/34)) ([a0e5eae](https://github.com/zenobi-us/beancount-importer-rules/commit/a0e5eae9d53fd1b604faaf3285f45e5731059cdc))
+* properly create and push annotated tag ([#43](https://github.com/zenobi-us/beancount-importer-rules/issues/43)) ([11ccf67](https://github.com/zenobi-us/beancount-importer-rules/commit/11ccf679a42f3a5f4030c40549ed42988a4c0e69))
+* regex matcher now more obvious behaviour ([#38](https://github.com/zenobi-us/beancount-importer-rules/issues/38)) ([a19545e](https://github.com/zenobi-us/beancount-importer-rules/commit/a19545e37120005f70adf50ec85396b659fa7f84))
+* stringify values before pattern matching ([#41](https://github.com/zenobi-us/beancount-importer-rules/issues/41)) ([9ecd0a7](https://github.com/zenobi-us/beancount-importer-rules/commit/9ecd0a75ae9a8e279dcb178e30369febc1ae0f8c))
+* support matching between dates and better regex handling ([#39](https://github.com/zenobi-us/beancount-importer-rules/issues/39)) ([72e2c9a](https://github.com/zenobi-us/beancount-importer-rules/commit/72e2c9a1ee73157b50623152c3f64826efc529b9))
+
+
+### Documentation
+
+* point to correct website ([#40](https://github.com/zenobi-us/beancount-importer-rules/issues/40)) ([3838cad](https://github.com/zenobi-us/beancount-importer-rules/commit/3838cadadbe2a46aa61722da72189a6b40fa55dc))
+* provide correct installation info ([#42](https://github.com/zenobi-us/beancount-importer-rules/issues/42)) ([4b397eb](https://github.com/zenobi-us/beancount-importer-rules/commit/4b397ebb8957aef9cd93330f0954e38633b67462))
+
 ## [0.1.7](https://github.com/zenobi-us/beancount-importer-rules/compare/v0.1.6...v0.1.7) (2024-09-10)
 
 
