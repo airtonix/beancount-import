@@ -63,7 +63,7 @@ jobs:
           mise run build
           mise run docs:build
 
-  DeployProd:
+  Release:
     needs:
       - Process
       - QA
@@ -117,8 +117,15 @@ jobs:
       - name: Tag Dev Version
         if: ${{ needs.Process.outputs.prs_created == 'true' }}
         run: |
-          git tag -a ${{ steps.get_release_version.outputs.Version }}
-          git push origin ${{ steps.get_release_version.outputs.Version }}
+          # delete remote tag
+          git push --delete origin ${{ steps.get_release_version.outputs.Version }} || true
+          # delete local tag
+          git tag -d ${{ steps.get_release_version.outputs.Version }} || true
+
+          # create new tag
+          git tag -a ${{ steps.get_release_version.outputs.Version }} -m "Release Candidate ${{ steps.get_release_version.outputs.Version }}"
+          # push new tag
+          git push origin tag ${{ steps.get_release_version.outputs.Version }}
 
       # we want to publish the docs on every change to the master branch
       - name: Docs
