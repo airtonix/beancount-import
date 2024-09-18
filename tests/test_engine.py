@@ -23,6 +23,10 @@ def test_engine_run():
     config_path = FIXTURE_FOLDER / "engine" / "import.yaml"
     beanfile_path = FIXTURE_FOLDER / "engine" / "books" / "main.bean"
 
+    # remove any existing output files
+    for f in (workdir / "books" / "imported").glob("*.bean"):
+        f.unlink
+
     engine = ImportRuleEngine(
         workdir=str(workdir),
         config_path=str(config_path),

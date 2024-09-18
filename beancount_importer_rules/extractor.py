@@ -129,9 +129,13 @@ class ExtractorBase:
     """
 
     name: str = "extractor"
+    """The name of the extractor. Will end up being available to matchers as `extractor`"""
     date_field: str = "Date"
-    date_format: str = "%Y-%m-%d"
-    datetime_format: str = "%Y-%m-%d %H:%M:%S"
+    """The field in the CSV file that contains the date"""
+    date_format: str = "YYYY-MM-DD"
+    """Arrow date format"""
+    datetime_format: str = "YYYY-MM-DD HH:MM:SS"
+    """Arrow datetime format"""
 
     def __init__(
         self,
