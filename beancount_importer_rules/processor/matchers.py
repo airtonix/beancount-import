@@ -1,13 +1,14 @@
+import datetime
 import pathlib
 import re
 
 from beancount_importer_rules.data_types import (
     SimpleTxnMatchRule,
-    StrExactMatch,
     StrMatch,
     StrRegexMatch,
     Transaction,
     TxnMatchVars,
+    stringify_value,
 )
 
 
@@ -26,23 +27,22 @@ def match_file(pattern: StrMatch, filepath: pathlib.Path | pathlib.PurePath) -> 
     return pattern.test(str(filepath))
 
 
-def match_str(pattern: StrMatch, value: str | None) -> bool:
+def match_str(
+    pattern: StrMatch, value: str | datetime.date | datetime.datetime | None
+) -> bool:
     if value is None:
         return False
 
-    if pattern is None:
-        return True
-
-    if pattern == value:
-        return True
-
+    # Most patterns that are just strings are valid regexes.
     if isinstance(pattern, str) and is_valid_regex(pattern):
         pattern = StrRegexMatch(regex=pattern)
 
+    # if the pattern turns out to not be a regex, we can just compare the strings.
     if isinstance(pattern, str):
-        pattern = StrExactMatch(equals=pattern)
+        return stringify_value(value) == pattern
 
-    return pattern.test(value)
+    # otherwise we assume it's a complex matcher
+    return pattern.test(stringify_value(value))
 
 
 def match_transaction(

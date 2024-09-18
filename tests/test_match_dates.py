@@ -107,6 +107,16 @@ now = arrow.utcnow()
             now.format("YYYY-MM-DD"),
             True,
         ),
+        (
+            now.format("YYYY-MM-DD"),
+            now.format("YYYY-MM-DD"),
+            True,
+        ),
+        (
+            now.shift(days=1).format("YYYY-MM-DD"),
+            now.format("YYYY-MM-DD"),
+            False,
+        ),
     ],
 )
 def test_match_dates(
@@ -119,4 +129,5 @@ def test_match_dates(
     value: str | None,
     expected: bool,
 ):
-    assert match_str(pattern, value) == expected
+    outcome = match_str(pattern, value) == expected
+    assert outcome
