@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://zenobi-us.github.io/beancount-importer-rules/latest/</loc>
+         <lastmod>2024-09-18</lastmod>
+    </url>
+    <url>
+         <loc>https://zenobi-us.github.io/beancount-importer-rules/latest/api/</loc>
+         <lastmod>2024-09-18</lastmod>
+    </url>
+    <url>
+         <loc>https://zenobi-us.github.io/beancount-importer-rules/latest/configuration/</loc>
+         <lastmod>2024-09-18</lastmod>
+    </url>
+    <url>
+         <loc>https://zenobi-us.github.io/beancount-importer-rules/latest/omit-fields/</loc>
+         <lastmod>2024-09-18</lastmod>
+    </url>
+    <url>
+         <loc>https://zenobi-us.github.io/beancount-importer-rules/latest/raodmap/</loc>
+         <lastmod>2024-09-18</lastmod>
+    </url>
+    <url>
+         <loc>https://zenobi-us.github.io/beancount-importer-rules/latest/transaction-ids/</loc>
+         <lastmod>2024-09-18</lastmod>
+    </url>
+</urlset>
